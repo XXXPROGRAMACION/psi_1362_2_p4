@@ -37,18 +37,18 @@
     </form>
 
     {% if board %}
-        <p>Board: {{ board }}</p>
-        <table id="chess_board">
+        <!--<p>Board: {{ board }}</p>-->
+        <div id="chess_board">
         {% for item in board %}
-            {% if forloop.counter0|divisibleby:8 %}<tr>{% endif %}
-            <td id="cell_{{ forloop.counter0}}"" style='width:20px;border:1px solid #000000;text-align:center;'>
-                {% if item ==  0 %}   x
-                {% elif item == 1 %}  &#9922;
-                {% else %}  &#9920; {% endif %}
-            </td>
-            {% if forloop.counter|divisibleby:8 or forloop.last %}</tr>{% endif %}
+            {% if forloop.counter0|divisibleby:8 %}<div class="row">{% endif %}
+            <div class="cell {% if forloop.counter0|divisibleby:8 %}{% cycle 'black' 'white' %}"{% else %}{% cycle 'white' 'black' %}{% endif %} id="cell_{{ forloop.counter0}}""'>
+                {% if item ==  0 %}   
+                {% elif item == 1 %}  🐱
+                {% else %} 🐭 {% endif %}
+            </div>
+            {% if forloop.counter|divisibleby:8 or forloop.last %}</div>{% endif %}
         {% endfor %}
-        </table>
+        </div>
     {% endif %}
 
     <p><a href="{% url 'landing' %}">Return to homepage</a></p>

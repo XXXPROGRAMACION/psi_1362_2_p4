@@ -49,6 +49,36 @@ ul {
   list-style-type: none;
 }
 
+.chess-board {
+  display: table;
+}
+
+.cell {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  float: left;
+  display: table-cell;
+  text-align: center;
+  border-radius: 3px;
+  text-shadow: none;
+}
+
+.cell.white {
+  background-color: #82e1e2;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.05) inset, 0px 0px 8px rgba(48, 155, 238, 0.6);
+  z-index: 2;
+}
+
+.cell.black {
+  background-color: rgb(8, 8, 8);
+  z-index: 1;
+}
+
+.row {
+  display: table-row;
+}
+
 .menu-option {
   cursor: pointer;
 }
