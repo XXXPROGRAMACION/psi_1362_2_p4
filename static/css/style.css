@@ -35,17 +35,26 @@ a {
   text-decoration: none;
 }
 
-a:hover {
-  animation: blink 1s step-start infinite;
-}
-
 ul {
   list-style-type: none;
 }
 
-.menu-option span {
+.menu-option {
+  cursor: pointer;
+}
+
+.menu-option:hover .text {
+  animation: blink 1s step-start infinite;
+}
+
+.menu-option .arrow {
+  opacity: 0;
   display: inline-block;
   transform: translateY(-3px);
+}
+
+.menu-option:hover .arrow {
+  opacity: 1;
 }
 
 #body #totalheader {
@@ -57,5 +66,5 @@ ul {
 }
 
 @keyframes blink {
-  50% { opacity: 0; }
+  35% { opacity: 0; }
 }

@@ -7,37 +7,37 @@
     <h1>Service catalog</h1>
 
     <ul>
-        <li class="menu-option">
-            <span>➤</span>
-            <a href="{% url 'login' %}">Login</a>
+        <li class="menu-option" onclick="location.href = '{% url 'login' %}';">
+            <span class="arrow">➤</span>
+            <span class="text">Login</span>
         </li>
-        <li class="menu-option">
-            <span>➤</span>
-            <a href="{% url 'logout' %}">Logout</a>
+        <li class="menu-option" onclick="location.href = '{% url 'logout' %}';">
+            <span class="arrow">➤</span>
+            <span class="text">Logout</span>
         </li>
-        <li class="menu-option">
-            <span>➤</span>
-            <a href="{% url 'signup' %}">Signup</a>
+        <li class="menu-option" onclick="location.href = '{% url 'signup' %}';">
+            <span class="arrow">➤</span>
+            <span class="text">Signup</span>
         </li>
-        <li class="menu-option">
-            <span>➤</span>
-            <a href="{% url 'counter' %}">Counter</a>
+        <li class="menu-option" onclick="location.href = '{% url 'counter' %}';">
+            <span class="arrow">➤</span>
+            <span class="text">Counter</span>
         </li>
-        <li class="menu-option">
-            <span>➤</span>
-            <a href="{% url 'create_game' %}">Create game</a>
+        <li class="menu-option" onclick="location.href = '{% url 'create_game' %}';">
+            <span class="arrow">➤</span>
+            <span class="text">Create game</span>
         </li>
-        <li class="menu-option">
-            <span>➤</span>
-            <a href="{% url 'join_game' %}">Join game</a>
+        <li class="menu-option" onclick="location.href = '{% url 'join_game' %}';">
+            <span class="arrow">➤</span>
+            <span class="text">Join game</span>
         </li>
-        <li class="menu-option">
-            <span>➤</span>
-            <a href="{% url 'select_game' %}">Select game</a>
+        <li class="menu-option" onclick="location.href = '{% url 'select_game' %}';">
+            <span class="arrow">➤</span>
+            <span class="text">Select game</span>
         </li>
-        <li class="menu-option">
-            <span>➤</span>
-            <a href="{% url 'show_game' %}">Show selected game and play</a>
+        <li class="menu-option" onclick="location.href = '{% url 'show_game' %}';">
+            <span class="arrow">➤</span>
+            <span class="text">Show selected game and play</span>
         </li>
     </ul>
 </div>
