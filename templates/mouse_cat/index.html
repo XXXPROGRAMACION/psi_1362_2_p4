@@ -7,14 +7,38 @@
     <h1>Service catalog</h1>
 
     <ul>
-        <li><a href="{% url 'login' %}">Login</a></li>
-        <li><a href="{% url 'logout' %}">Logout</a></li>
-        <li><a href="{% url 'signup' %}">Signup</a></li>
-        <li><a href="{% url 'counter' %}">Counter</a></li>
-        <li><a href="{% url 'create_game' %}">Create game</a></li>
-        <li><a href="{% url 'join_game' %}">Join game</a></li>
-        <li><a href="{% url 'select_game' %}">Select game</a></li>
-        <li><a href="{% url 'show_game' %}">Show selected game and play</a></li>
+        <li class="menu-option">
+            <span>➤</span>
+            <a href="{% url 'login' %}">Login</a>
+        </li>
+        <li class="menu-option">
+            <span>➤</span>
+            <a href="{% url 'logout' %}">Logout</a>
+        </li>
+        <li class="menu-option">
+            <span>➤</span>
+            <a href="{% url 'signup' %}">Signup</a>
+        </li>
+        <li class="menu-option">
+            <span>➤</span>
+            <a href="{% url 'counter' %}">Counter</a>
+        </li>
+        <li class="menu-option">
+            <span>➤</span>
+            <a href="{% url 'create_game' %}">Create game</a>
+        </li>
+        <li class="menu-option">
+            <span>➤</span>
+            <a href="{% url 'join_game' %}">Join game</a>
+        </li>
+        <li class="menu-option">
+            <span>➤</span>
+            <a href="{% url 'select_game' %}">Select game</a>
+        </li>
+        <li class="menu-option">
+            <span>➤</span>
+            <a href="{% url 'show_game' %}">Show selected game and play</a>
+        </li>
     </ul>
 </div>
 {% endblock content %}

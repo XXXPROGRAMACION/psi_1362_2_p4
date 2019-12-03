@@ -1,0 +1,61 @@
+* {
+  box-sizing: border-box;
+  color: white;
+  letter-spacing: 0.4rem;
+  line-height: 2.5rem;
+  text-shadow: 
+    -2px 0 0 #fdff2a,
+    -4px 0 0 #df4a42,
+    2px 0 0 #91fcfe,
+    4px 0 0 #4405fc;
+  font-family: 'Press Start 2P', cursive;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    #0f0a1e,
+    #0f0a1e 2px,
+    #140e29 2px,
+    #140e29 4px
+  );
+}
+
+h1 {
+  margin: 0;
+}
+
+span {
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+a:hover {
+  animation: blink 1s step-start infinite;
+}
+
+ul {
+  list-style-type: none;
+}
+
+.menu-option span {
+  display: inline-block;
+  transform: translateY(-3px);
+}
+
+#body #totalheader {
+  padding: 20px 40px;
+}
+
+#content {
+  padding: 20px 40px;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}

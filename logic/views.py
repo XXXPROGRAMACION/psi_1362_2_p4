@@ -10,22 +10,35 @@ from django.db.models import Q
 from django.views.decorators.http import require_http_methods
 
 
-@require_http_methods(['GET'])
-def index(request):    
-    return render(request, 'mouse_cat/index.html')
+# Autor: Alejandro Pascual Pozo
+def errorHTTP(request, exception=None, status=200):
+    context_dict = {}
+    context_dict[constants.ERROR_MESSAGE_ID] = exception
+    return render(request, 'mouse_cat/error.html', context_dict, status=status)
 
 
+# Autor: Víctor Yrazusta Ibarra
 def anonymous_required(f):
     def wrapped(request):
         if request.user.is_authenticated:
-            return HttpResponseForbidden(
-                errorHTTP(request, exception='Action restricted to anonymous users')
+            # Modificado para evitar el error "connection already closed"
+            return errorHTTP(
+                request,
+                exception='Action restricted to anonymous users',
+                status=403
             )
         else:
             return f(request)
     return wrapped
 
 
+# Autor: Alejandro Pascual Pozo
+@require_http_methods(['GET'])
+def index(request):    
+    return render(request, 'mouse_cat/index.html')
+
+
+# Autor: Víctor Yrazusta Ibarra
 @anonymous_required
 @require_http_methods(['GET', 'POST'])
 def login_service(request):
@@ -48,7 +61,7 @@ def login_service(request):
                 login_form.add_error(None, 'La cuenta indicada se encuentra deshabilitada')
                 return render(request, 'mouse_cat/login.html', context_dict)
         else:
-            login_form.add_error(None, 'Username/password is not valid|Usuario/clave no válidos')
+            login_form.add_error(None, 'Username/password is not valid')
             return render(request, 'mouse_cat/login.html', context_dict)
     else:
         login_form = LoginForm()
@@ -57,6 +70,7 @@ def login_service(request):
         return render(request, 'mouse_cat/login.html', context_dict)
 
 
+# Autor: Alejandro Pascual Pozo
 @login_required
 @require_http_methods(['GET'])
 def logout_service(request):
@@ -65,6 +79,7 @@ def logout_service(request):
     return render(request, 'mouse_cat/logout.html', context_dict)
 
 
+# Autor: Víctor Yrazusta Ibarra
 @anonymous_required
 @require_http_methods(['GET', 'POST'])
 def signup_service(request):
@@ -86,6 +101,7 @@ def signup_service(request):
     return render(request, 'mouse_cat/signup.html', context_dict)
 
 
+# Autor: Alejandro Pascual Pozo
 @require_http_methods(['GET'])
 def counter_service(request):
     inc_counters(request)
@@ -97,6 +113,7 @@ def counter_service(request):
     return render(request, 'mouse_cat/counter.html', context_dict)
 
 
+# Autor: Víctor Yrazusta Ibarra
 def inc_counters(request):
     if 'counter_session' in request.session:
         request.session['counter_session'] += 1
@@ -105,6 +122,7 @@ def inc_counters(request):
     Counter.objects.inc()
 
 
+# Autor: Alejandro Pascual Pozo
 @login_required
 @require_http_methods(['GET'])
 def create_game_service(request):
@@ -114,6 +132,7 @@ def create_game_service(request):
     return render(request, 'mouse_cat/new_game.html', context_dict)
 
 
+# Autor: Víctor Yrazusta Ibarra
 @login_required
 @require_http_methods(['GET'])
 def join_game_service(request):
@@ -124,11 +143,12 @@ def join_game_service(request):
         game.save()
         context_dict = { 'game': game }
     else:
-        context_dict = { 'msg_error': 'There is no available games|No hay juegos disponibles' }   
+        context_dict = { 'msg_error': 'There is no available games' }   
      
     return render(request, 'mouse_cat/join_game.html', context_dict)
 
 
+# Autor: Alejandro Pascual Pozo
 @login_required
 @require_http_methods(['GET', 'POST'])
 def select_game_service(request, game_id=None):
@@ -147,25 +167,42 @@ def select_game_service(request, game_id=None):
         return render(request, 'mouse_cat/select_game.html', context_dict)
 
 
+# Autor: Víctor Yrazusta Ibarra
 @login_required
 @require_http_methods(['GET'])
 def show_game_service(request):
     if 'game_selected' not in request.session:
-        return errorHTTP(request, 'No se ha seleccionado una partida a la que jugar')    
+        return errorHTTP(
+            request,
+            exception='You have not selected a game',
+            status=404
+        )
 
     game_id = request.session['game_selected']
     games = Game.objects.filter(id=game_id)
 
     if len(games) == 0:
-        return HttpResponseNotFound('La partida seleccionada no es válida') 
+        return errorHTTP(
+            request,
+            exception='The selected game is not valid',
+            status=404
+        )
 
     game = games[0]
 
     if game.status != GameStatus.ACTIVE:
-        return HttpResponseNotFound('La partida no está activa')
+        return errorHTTP(
+            request,
+            exception='The selected game is not active',
+            status=404
+        )
 
     if game.cat_user != request.user and game.mouse_user != request.user:
-        return HttpResponseNotFound('No eres jugador de la partida seleccionada')
+        return errorHTTP(
+            request,
+            exception='You are not a player of the selected game',
+            status=404
+        )
 
     board = [0]*64
     board[game.cat1] = 1
@@ -176,66 +213,55 @@ def show_game_service(request):
 
     move_form = MoveForm()
     
-    # /!\
-    # En teoría también se necesita el usuario actual, pero no veo que se use en game.html
-    # Falta move_form (?)
-    # /!\
     context_dict = { 'game': game, 'board': board, 'move_form': move_form }
     return render(request, 'mouse_cat/game.html', context_dict)
 
 
+# Autor: Alejandro Pascual Pozo
 @login_required
 @require_http_methods(['POST'])
 def move_service(request):
     if 'game_selected' not in request.session:
-        return errorHTTP(request, 'No se ha seleccionado una partida a la que jugar')    
+        return errorHTTP(
+            request,
+            exception='You have not selected a game',
+            status=404
+        )
 
     game_id = request.session['game_selected']
     games = Game.objects.filter(id=game_id)
 
     if len(games) == 0:
-        return HttpResponseNotFound('La partida seleccionada no es válida') 
+        return errorHTTP(
+            request,
+            exception='The selected game is not valid',
+            status=404
+        )
 
     game = games[0]
 
     if game.status != GameStatus.ACTIVE:
-        return HttpResponseNotFound('La partida no está activa')
+        return errorHTTP(
+            request,
+            exception='The selected game is not active',
+            status=404
+        )
 
     if game.cat_user != request.user and game.mouse_user != request.user:
-        return HttpResponseNotFound('No eres jugador de la partida seleccionada')
+        return errorHTTP(
+            request,
+            exception='You are not a player of the selected game',
+            status=404
+        )
 
-    # /!\
-    # Revisar que exista la variable game_selected y que sea una partida válida
-    # Averiguar nombres de los movimientos
-    # /!\
-    player = request.user_form
+    player = request.user
     origin = int(request.POST.get('origin'))
     target = int(request.POST.get('target'))
-    
-    if game.cat_turn is True:
-        # /!\
-        # if ningún game.cat == initial_pos:
-        #     error
-        # /!\
-        # Comprobación de movimientos válidos
-        game.cat1 = target
-        #       ^ No necesariamente el 1
-    else:
-        # /!\
-        # if game.mouse != initial_pos:
-        #     error
-        # /!\
-        # Comprobación de movimientos válidos
-        game.mouse = target
 
-    move = Move(origin=origin, target=target, game=game, player=player)
-    move.save()
-    game.cat_turn = not game.cat_turn
-    game.save()
+    try:
+        move = Move(origin=origin, target=target, game=game, player=player)
+        move.save()
+    except:
+        pass
+
     return redirect(reverse('show_game'))
-
-
-def errorHTTP(request, exception=None):
-    context_dict = {}
-    context_dict[constants.ERROR_MESSAGE_ID] = exception
-    return render(request, 'mouse_cat/error.html', context_dict)

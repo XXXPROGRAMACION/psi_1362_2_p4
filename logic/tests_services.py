@@ -296,8 +296,7 @@ class LogInOutServiceTests(ServiceBaseTest):
 
     def test3(self):
         """ Solo los usuarios anónimos pueden invocar al servicio """
-        """ self.validate_anonymous_required(self.client1, LOGIN_SERVICE) """
-        self.assertTrue(False)
+        self.validate_anonymous_required(self.client1, LOGIN_SERVICE)
 
     def test4(self):
         """ Identificación de los usuarios autenticados en la página de landing """
@@ -353,8 +352,7 @@ class SignupServiceTests(ServiceBaseTest):
 
     def test1(self):
         """ Solo los usuarios anónimos tienen acceso """
-        """ self.validate_anonymous_required(self.client1, SIGNUP_SERVICE) """
-        self.assertTrue(False)
+        self.validate_anonymous_required(self.client1, SIGNUP_SERVICE)
 
     def test2(self):
         """ Alta correcta de usuarios """

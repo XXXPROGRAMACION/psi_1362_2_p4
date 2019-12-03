@@ -31,10 +31,10 @@ game.mouse_user = user_11
 game.save()
 print("Partida comenzada - " + str(game))
 
-game.cat2 = 11
-game.save()
+move = Move(game=game, player=user_10, origin=2, target=11)
+move.save()
 print("Gato movido a 11 - " + str(game))
 
-game.mouse = 52
-game.save()
+move = Move(game=game, player=user_11, origin=59, target=52)
+move.save()
 print("Ratón movido a 52 - " + str(game))

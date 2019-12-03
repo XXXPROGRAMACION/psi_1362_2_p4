@@ -11,6 +11,7 @@ class GameStatus(IntEnum):
     ACTIVE = 1
     FINISHED = 2
 
+    # Autor: Alejandro Pascual Pozo
     def to_string(game_status):
         if game_status == GameStatus.CREATED:
             return 'Created'
@@ -46,16 +47,19 @@ class Game(models.Model):
     MIN_CELL = 0
     MAX_CELL = 63
 
+    # Autor: Víctor Yrazusta Ibarra
     def __init__(self, *args, **kwargs):
         super(Game, self).__init__(*args, **kwargs)
         self.validate()
 
+    # Autor: Alejandro Pascual Pozo
     def save(self, *args, **kwargs):
         self.validate()
         if self.status == GameStatus.CREATED and self.mouse_user is not None:
             self.status = GameStatus.ACTIVE
         super(Game, self).save(*args, **kwargs)
 
+    # Autor: Víctor Yrazusta Ibarra
     def validate(self):
         if self.cat1 < Game.MIN_CELL or self.cat1 > Game.MAX_CELL:
             raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
@@ -82,7 +86,8 @@ class Game(models.Model):
 
     class Meta:
         app_label = 'datamodel'
-        
+     
+    # Autor: Alejandro Pascual Pozo
     def __str__(self):
         message = (
             '(%d, %s)' % (self.id, GameStatus.to_string(self.status)) +
@@ -102,14 +107,17 @@ class Move(models.Model):
     player = models.ForeignKey(User, on_delete=models.CASCADE, related_name='moves')
     date = models.DateField(null=False)
 
+    # Autor: Víctor Yrazusta Ibarra
     def __init__(self, *args, **kwargs):
         super(Move, self).__init__(*args, **kwargs)
         self.date = datetime.now()
 
+    # Autor: Alejandro Pascual Pozo
     def save(self, *args, **kwargs):
         self.validate()
         super(Move, self).save(*args, **kwargs)
     
+    # Autor: Víctor Yrazusta Ibarra
     def validate(self):
         if self.origin < Game.MIN_CELL or self.origin > Game.MAX_CELL:
             raise ValidationError(constants.MSG_ERROR_MOVE)
@@ -120,18 +128,64 @@ class Move(models.Model):
         if self.target%2 is not self.target//8%2:
             raise ValidationError(constants.MSG_ERROR_MOVE)
 
+        if self.target == self.game.mouse:
+            raise ValidationError(constants.MSG_ERROR_MOVE)
+        if self.target == self.game.cat1:
+            raise ValidationError(constants.MSG_ERROR_MOVE)
+        if self.target == self.game.cat2:
+            raise ValidationError(constants.MSG_ERROR_MOVE)
+        if self.target == self.game.cat3:
+            raise ValidationError(constants.MSG_ERROR_MOVE)
+        if self.target == self.game.cat4:
+            raise ValidationError(constants.MSG_ERROR_MOVE)
+
+        if self.game.status != GameStatus.ACTIVE:
+            raise ValidationError(constants.MSG_ERROR_MOVE)
+    
+        if self.game.cat_turn is True and self.game.cat_user == self.player:
+            if not (self.origin%8 != 0 and self.target == self.origin+7):
+                if not (self.origin%8 != 7 and self.target == self.origin+9):
+                    raise ValidationError(constants.MSG_ERROR_MOVE)
+                    
+            if self.origin == self.game.cat1:
+                self.game.cat1 = self.target
+            elif self.origin == self.game.cat2:
+                self.game.cat2 = self.target
+            elif self.origin == self.game.cat3:
+                self.game.cat3 = self.target
+            elif self.origin == self.game.cat4:
+                self.game.cat4 = self.target
+            else:
+                raise ValidationError(constants.MSG_ERROR_MOVE)
+        elif self.game.cat_turn is False and self.game.mouse_user == self.player:
+            if not (self.origin%8 != 0 and (self.target == self.origin+7 or self.target == self.origin-9)):
+                if not (self.origin%8 != 7 and (self.target == self.origin+9 or self.target == self.origin-7)):
+                    raise ValidationError(constants.MSG_ERROR_MOVE)
+
+            if self.origin == self.game.mouse:
+                self.game.mouse = self.target
+            else:
+                raise ValidationError(constants.MSG_ERROR_MOVE)
+        else:
+            raise ValidationError(constants.MSG_ERROR_MOVE)
+        
+        self.game.cat_turn = not self.game.cat_turn
+        self.game.save()
+
     class Meta:
         app_label = 'datamodel'
 
 
 class CounterManager(models.Manager):
 
+    # Autor: Alejandro Pascual Pozo
     def get_current_value(self):
         try:
             return self.get(pk=1).value
         except:
             return 0
 
+    # Autor: Alejandro Pascual Pozo
     def inc(self):
         try:
             counter = self.get(pk=1)
@@ -146,8 +200,10 @@ class Counter(models.Model):
     value = models.IntegerField(null=False, default=0)
     objects = CounterManager()
 
+    # Autor: Víctor Yrazusta Ibarra
     def save(self, *args, **kwargs):
         raise ValidationError(constants.MSG_ERROR_NEW_COUNTER)
 
+    # Autor: Alejandro Pascual Pozo
     def delete(self, *args, **kwargs):
         pass

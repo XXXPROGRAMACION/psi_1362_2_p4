@@ -1,0 +1,32 @@
+Coverage of the datamodel application:
+Name                                              Stmts   Miss  Cover   Missing
+-------------------------------------------------------------------------------
+datamodel/__init__.py                                 0      0   100%
+datamodel/admin.py                                    4      0   100%
+datamodel/apps.py                                     3      3     0%   1-5
+datamodel/constants.py                                6      0   100%
+datamodel/migrations/0001_initial.py                  8      0   100%
+datamodel/migrations/0002_auto_20191112_1421.py       6      0   100%
+datamodel/migrations/0003_counter.py                  4      0   100%
+datamodel/migrations/0004_auto_20191119_1351.py       4      0   100%
+datamodel/migrations/__init__.py                      0      0   100%
+datamodel/models.py                                 147     22    85%   22, 81, 115, 117, 119, 121, 124, 126, 128, 130, 132, 140, 146-151, 154-155, 160-162, 197
+datamodel/views.py                                    1      1     0%   1
+-------------------------------------------------------------------------------
+TOTAL                                               183     26    86%
+
+
+
+Coverage of the logic application:
+Name                           Stmts   Miss  Cover   Missing
+------------------------------------------------------------
+logic/__init__.py                  0      0   100%
+logic/admin.py                     1      0   100%
+logic/apps.py                      3      3     0%   1-5
+logic/forms.py                    27      0   100%
+logic/migrations/__init__.py       0      0   100%
+logic/models.py                    1      0   100%
+logic/urls.py                      3      0   100%
+logic/views.py                   148      9    94%   53-54, 88, 159, 202, 207, 210, 219-220
+------------------------------------------------------------
+TOTAL                            183     12    93%
