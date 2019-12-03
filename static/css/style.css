@@ -35,6 +35,16 @@ a {
   text-decoration: none;
 }
 
+a:hover {
+  animation: blink 1s step-start infinite;
+}
+
+input {
+  background-color: black;
+  padding: 5px 15px 5px 15px;
+  caret-color: #00FF00;
+}
+
 ul {
   list-style-type: none;
 }
@@ -56,6 +66,7 @@ ul {
 .menu-option:hover .arrow {
   opacity: 1;
 }
+
 
 #body #totalheader {
   padding: 20px 40px;
