@@ -41,7 +41,20 @@
         <div id="chess_board">
         {% for item in board %}
             {% if forloop.counter0|divisibleby:8 %}<div class="row">{% endif %}
-            <div class="cell {% if forloop.counter0|divisibleby:8 %}{% cycle 'black' 'white' %}"{% else %}{% cycle 'white' 'black' %}{% endif %} id="cell_{{ forloop.counter0}}""'>
+            <div class="cell {% if forloop.counter0|divisibleby:8 %}{% cycle 'black' 'white' %}{% else %}{% cycle 'white' 'black' %}{% endif %}" 
+                onclick='
+                {% if item ==  0 %}   
+                {% elif item == 1 %}  
+                {% if forloop.counter0|divisibleby:8 %}
+                $("#cell_{{ forloop.counter0|add:9 }}").css("background", "red");
+                {% elif forloop.counter0|add:1|divisibleby:8 %}
+                $("#cell_{{ forloop.counter0|add:7 }}").css("background", "red");
+                {% else %}
+                $("#cell_{{ forloop.counter0|add:7 }}, #cell_{{ forloop.counter0|add:9 }}").css("background", "red");
+                {% endif %}
+                {% else %}  {% endif %}
+                '
+                id="cell_{{ forloop.counter0 }}">
                 {% if item ==  0 %}   
                 {% elif item == 1 %}  🐱
                 {% else %} 🐭 {% endif %}
