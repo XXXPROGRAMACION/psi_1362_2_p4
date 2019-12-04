@@ -49,13 +49,14 @@
                 {% if item ==  0 %}
                     if (cell_list.includes({{ forloop.counter0 }})) {
                         alert("Movimiento a ".concat({{ forloop.counter0 }}));
-                    } else {
+                    } else if (cell_list.length != 0){
                         alert("Movimiento no válido");
                     }
                     for (cell in cell_list) {
                         $("#cell_".concat(cell_list[cell])).css("background", "");
                     }
-                {% elif item == 1 and forloop.counter0 < 7%}
+                    cell_list = []
+                {% elif item == 1 and forloop.counter0 < 7 and game.cat_user.id == request.user.id %}
                     for (cell in cell_list) {
                         $("#cell_".concat(cell_list[cell])).css("background", "");
                     }
@@ -71,7 +72,22 @@
                         cell_list.push({{ forloop.counter0|add:7 }});
                         cell_list.push({{ forloop.counter0|add:9 }});
                     {% endif %}
-                {% else %} 
+                {% elif item == -1 and forloop.counter0 > 0 and game.mouse_user.id == request.user.id %}
+                    for (cell in cell_list) {
+                        $("#cell_".concat(cell_list[cell])).css("background", "");
+                    }
+                    cell_list = []
+                    {% if forloop.counter0|divisibleby:8 %}
+                        $("#cell_{{ forloop.counter0|add:"-9" }}").css("background", "red");
+                        cell_list.push({{ forloop.counter0|add:"-9" }});
+                    {% elif forloop.counter0|add:1|divisibleby:8 %}
+                        $("#cell_{{ forloop.counter0|add:"-7" }}").css("background", "red");
+                        cell_list.push({{ forloop.counter0|add:"-7" }});
+                    {% else %}
+                        $("#cell_{{ forloop.counter0|add:"-7" }}, #cell_{{ forloop.counter0|add:"-9" }}").css("background", "red");
+                        cell_list.push({{ forloop.counter0|add:"-7" }});
+                        cell_list.push({{ forloop.counter0|add:"-9" }});
+                    {% endif %}
                 {% endif %}
                 '
                 id="cell_{{ forloop.counter0 }}">
