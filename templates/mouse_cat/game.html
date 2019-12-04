@@ -37,22 +37,42 @@
     </form>
 
     {% if board %}
+        <script>
+            cell_list = [];
+        </script>
         <!--<p>Board: {{ board }}</p>-->
         <div id="chess_board">
         {% for item in board %}
             {% if forloop.counter0|divisibleby:8 %}<div class="row">{% endif %}
             <div class="cell {% if forloop.counter0|divisibleby:8 %}{% cycle 'black' 'white' %}{% else %}{% cycle 'white' 'black' %}{% endif %}" 
                 onclick='
-                {% if item ==  0 %}   
-                {% elif item == 1 %}  
-                {% if forloop.counter0|divisibleby:8 %}
-                $("#cell_{{ forloop.counter0|add:9 }}").css("background", "red");
-                {% elif forloop.counter0|add:1|divisibleby:8 %}
-                $("#cell_{{ forloop.counter0|add:7 }}").css("background", "red");
-                {% else %}
-                $("#cell_{{ forloop.counter0|add:7 }}, #cell_{{ forloop.counter0|add:9 }}").css("background", "red");
+                {% if item ==  0 %}
+                    if (cell_list.includes({{ forloop.counter0 }})) {
+                        alert("Movimiento a ".concat({{ forloop.counter0 }}));
+                    } else {
+                        alert("Movimiento no válido");
+                    }
+                    for (cell in cell_list) {
+                        $("#cell_".concat(cell_list[cell])).css("background", "");
+                    }
+                {% elif item == 1 and forloop.counter0 < 7%}
+                    for (cell in cell_list) {
+                        $("#cell_".concat(cell_list[cell])).css("background", "");
+                    }
+                    cell_list = []
+                    {% if forloop.counter0|divisibleby:8 %}
+                        $("#cell_{{ forloop.counter0|add:9 }}").css("background", "red");
+                        cell_list.push({{ forloop.counter0|add:9 }});
+                    {% elif forloop.counter0|add:1|divisibleby:8 %}
+                        $("#cell_{{ forloop.counter0|add:7 }}").css("background", "red");
+                        cell_list.push({{ forloop.counter0|add:7 }});
+                    {% else %}
+                        $("#cell_{{ forloop.counter0|add:7 }}, #cell_{{ forloop.counter0|add:9 }}").css("background", "red");
+                        cell_list.push({{ forloop.counter0|add:7 }});
+                        cell_list.push({{ forloop.counter0|add:9 }});
+                    {% endif %}
+                {% else %} 
                 {% endif %}
-                {% else %}  {% endif %}
                 '
                 id="cell_{{ forloop.counter0 }}">
                 {% if item ==  0 %}   
