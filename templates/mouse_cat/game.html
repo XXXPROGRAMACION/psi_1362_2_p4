@@ -10,10 +10,7 @@
             Cats: <b>{{ game.cat_user.username }}</b>
             {% if game.cat_user.id == request.user.id %}
                 <blockquote class="cat">
-                    {% if game.cat_turn %}
-                        {{ move_form }}
-                        <input type="submit" value="Move" />
-                    {% else %}
+                    {% if not game.cat_turn %}
                         Waiting for the mouse...
                         <a style="margin-left:20px;font-weight:normal" href="{% url 'show_game' %}">Refresh</a>
                     {% endif %}
@@ -24,10 +21,7 @@
             Mouse: <b>{{ game.mouse_user.username }}</b>
             {% if game.mouse_user.id == request.user.id %}
                 <blockquote class="mouse">
-                    {% if not game.cat_turn %}
-                        {{ move_form }}
-                        <input type="submit" value="Move" />
-                    {% else %}
+                    {% if game.cat_turn %}
                         Waiting for the cat...
                         <a style="margin-left:20px;font-weight:normal" href="{% url 'show_game' %}">Refresh</a>
                     {% endif %}
@@ -38,7 +32,31 @@
 
     {% if board %}
         <script>
-            cell_list = [];
+            cell_target_list = [];
+            cell_origin = -1;
+            target_mouse = false;
+
+            function send_move(origin, target, mouse) {
+                var data = new FormData();
+                data.append('origin', origin);
+                data.append('target', target);
+                data.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        // Realizar movimiento en el cliente 
+                        alert("Movimiento de ".concat(origin).concat(" a ").concat(target).concat(" exitoso"));
+                        $("#cell_".concat(origin)).empty();
+                        if (mouse) {
+                            $("#cell_".concat(target)).append("🐭");
+                        } else {
+                            $("#cell_".concat(target)).append("🐱");
+                        }
+                    }
+                };
+                xhttp.open("POST", "{% url 'move' %}", true);
+                xhttp.send(data);
+            }
         </script>
         <!--<p>Board: {{ board }}</p>-->
         <div id="chess_board">
@@ -46,48 +64,54 @@
             {% if forloop.counter0|divisibleby:8 %}<div class="row">{% endif %}
             <div class="cell {% if forloop.counter0|divisibleby:8 %}{% cycle 'black' 'white' %}{% else %}{% cycle 'white' 'black' %}{% endif %}" 
                 onclick='
+                {% if game.cat_turn and game.cat_user.id == request.user.id or not game.cat_turn and game.mouse_user.id == request.user.id %}
                 {% if item ==  0 %}
-                    if (cell_list.includes({{ forloop.counter0 }})) {
-                        alert("Movimiento a ".concat({{ forloop.counter0 }}));
-                    } else if (cell_list.length != 0){
+                    if (cell_target_list.includes({{ forloop.counter0 }})) {
+                        send_move(cell_origin, {{ forloop.counter0 }}, target_mouse);
+                    } else if (cell_target_list.length != 0){
                         alert("Movimiento no válido");
                     }
-                    for (cell in cell_list) {
-                        $("#cell_".concat(cell_list[cell])).css("background", "");
+                    for (cell in cell_target_list) {
+                        $("#cell_".concat(cell_target_list[cell])).css("background", "");
                     }
-                    cell_list = []
+                    cell_target_list = []
                 {% elif item == 1 and forloop.counter0 < 7 and game.cat_user.id == request.user.id %}
-                    for (cell in cell_list) {
-                        $("#cell_".concat(cell_list[cell])).css("background", "");
+                    for (cell in cell_target_list) {
+                        $("#cell_".concat(cell_target_list[cell])).css("background", "");
                     }
-                    cell_list = []
+                    cell_target_list = [];
+                    cell_origin = {{ forloop.counter0 }};
+                    target_mouse = false;
                     {% if forloop.counter0|divisibleby:8 %}
                         $("#cell_{{ forloop.counter0|add:9 }}").css("background", "red");
-                        cell_list.push({{ forloop.counter0|add:9 }});
+                        cell_target_list.push({{ forloop.counter0|add:9 }});
                     {% elif forloop.counter0|add:1|divisibleby:8 %}
                         $("#cell_{{ forloop.counter0|add:7 }}").css("background", "red");
-                        cell_list.push({{ forloop.counter0|add:7 }});
+                        cell_target_list.push({{ forloop.counter0|add:7 }});
                     {% else %}
                         $("#cell_{{ forloop.counter0|add:7 }}, #cell_{{ forloop.counter0|add:9 }}").css("background", "red");
-                        cell_list.push({{ forloop.counter0|add:7 }});
-                        cell_list.push({{ forloop.counter0|add:9 }});
+                        cell_target_list.push({{ forloop.counter0|add:7 }});
+                        cell_target_list.push({{ forloop.counter0|add:9 }});
                     {% endif %}
                 {% elif item == -1 and forloop.counter0 > 0 and game.mouse_user.id == request.user.id %}
-                    for (cell in cell_list) {
-                        $("#cell_".concat(cell_list[cell])).css("background", "");
+                    for (cell in cell_target_list) {
+                        $("#cell_".concat(cell_target_list[cell])).css("background", "");
                     }
-                    cell_list = []
+                    cell_target_list = [];
+                    cell_origin = {{ forloop.counter0 }};
+                    target_mouse = true;
                     {% if forloop.counter0|divisibleby:8 %}
                         $("#cell_{{ forloop.counter0|add:"-9" }}").css("background", "red");
-                        cell_list.push({{ forloop.counter0|add:"-9" }});
+                        cell_target_list.push({{ forloop.counter0|add:"-9" }});
                     {% elif forloop.counter0|add:1|divisibleby:8 %}
                         $("#cell_{{ forloop.counter0|add:"-7" }}").css("background", "red");
-                        cell_list.push({{ forloop.counter0|add:"-7" }});
+                        cell_target_list.push({{ forloop.counter0|add:"-7" }});
                     {% else %}
                         $("#cell_{{ forloop.counter0|add:"-7" }}, #cell_{{ forloop.counter0|add:"-9" }}").css("background", "red");
-                        cell_list.push({{ forloop.counter0|add:"-7" }});
-                        cell_list.push({{ forloop.counter0|add:"-9" }});
+                        cell_target_list.push({{ forloop.counter0|add:"-7" }});
+                        cell_target_list.push({{ forloop.counter0|add:"-9" }});
                     {% endif %}
+                {% endif %}
                 {% endif %}
                 '
                 id="cell_{{ forloop.counter0 }}">
