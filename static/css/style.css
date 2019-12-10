@@ -51,7 +51,6 @@ ul {
 
 .chess-board {
   display: table;
-  cursor: pointer;
 }
 
 .cell {
@@ -64,6 +63,7 @@ ul {
   text-shadow: none;
   text-align: center;
   vertical-align: middle;
+  cursor: pointer;
 }
 
 .cell.white {

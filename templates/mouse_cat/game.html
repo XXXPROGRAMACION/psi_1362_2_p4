@@ -59,7 +59,7 @@
                 xhttp.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
                         // Realizar movimiento en el cliente 
-                        alert("Movimiento de " + origin + " a " + target + " exitoso"));
+                        alert("Movement from " + origin + " to " + target + " succesful");
                         $("#cell_" + origin).empty();
                         if (mouse) {
                             $("#cell_" + target).append("🐭");
@@ -79,17 +79,8 @@
             {% if forloop.counter0|divisibleby:8 %}<div class="row">{% endif %}
             <div class="cell {% if forloop.counter0|divisibleby:8 %}{% cycle 'black' 'white' %}{% else %}{% cycle 'white' 'black' %}{% endif %}" 
                 onclick=
-                'if ($("#cell_" + {{ forloop.counter0 }}).text().length === 0) {
-                    if (cell_target_list.includes({{ forloop.counter0 }})) {
-                        send_move(cell_origin, {{ forloop.counter0 }}, target_mouse);
-                    } else if (cell_target_list.length != 0) {
-                        alert("Invalid move.");
-                    }
-                    for (cell in cell_target_list) {
-                        $("#cell_" + cell_target_list[cell]).css("background", "");
-                    }
-                    cell_target_list = []
-                } else if ($("#cell_" + {{ forloop.counter0 }}).text() === "🐱") {
+                '
+                if ($("#cell_" + {{ forloop.counter0 }}).text().includes("🐱")) {
                     if (!user_is_cat) {
                         alert("You are not the cat player.");
                         return;
@@ -117,7 +108,7 @@
                         cell_target_list.push({{ forloop.counter0|add:7 }});
                         cell_target_list.push({{ forloop.counter0|add:9 }});
                     {% endif %}
-                } else if ($("#cell_" + {{ forloop.counter0 }}).text() === "🐭") {
+                } else if ($("#cell_" + {{ forloop.counter0 }}).text().includes("🐭")) {
                     if (user_is_cat) {
                         alert("You are not the mouse player.");
                         return;
@@ -144,6 +135,18 @@
                         cell_target_list.push({{ forloop.counter0|add:"-7" }});
                         cell_target_list.push({{ forloop.counter0|add:"-9" }});
                     {% endif %}
+                } else {
+                    if (cell_target_list.includes({{ forloop.counter0 }})) {
+                        send_move(cell_origin, {{ forloop.counter0 }}, target_mouse);
+                    } else if (cell_target_list.length != 0) {
+                        alert("Invalid move.");
+                    } else {
+                        alert("Not your turn.");
+                    }
+                    for (cell in cell_target_list) {
+                        $("#cell_" + cell_target_list[cell]).css("background", "");
+                    }
+                    cell_target_list = []
                 }'
                 id="cell_{{ forloop.counter0 }}">
                 <p>{% if item ==  -1 %}🐭{% elif item == 1 %}🐱{% endif %}</p>
