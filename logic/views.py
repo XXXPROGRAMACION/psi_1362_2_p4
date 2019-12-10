@@ -265,3 +265,9 @@ def move_service(request):
         pass
 
     return redirect(reverse('show_game'))
+
+
+@login_required
+@require_http_methods(['POST'])
+def get_move_service(request):
+    return None

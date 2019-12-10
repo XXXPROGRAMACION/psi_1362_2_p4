@@ -36,6 +36,19 @@
             cell_origin = -1;
             target_mouse = false;
             cat_turn = {% if game.cat_turn %}true{% else %}false{% endif %};
+            user_is_cat = {% if game.cat_user.id == request.user.id %}true{% else %}false{% endif %};
+
+            function update_board(board) {
+                for (let i = 0; i < 64; i++) {
+                    if (board[i] == -1) {
+                        $("#cell_" + i).text("🐭");
+                    } else if (board[i] == 1) {
+                        $("#cell_" + i).text("🐱");
+                    } else {
+                        $("#cell_" + i).empty();
+                    }
+                }
+            }
 
             function send_move(origin, target, mouse) {
                 var data = new FormData();
@@ -46,13 +59,14 @@
                 xhttp.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
                         // Realizar movimiento en el cliente 
-                        alert("Movimiento de ".concat(origin).concat(" a ").concat(target).concat(" exitoso"));
-                        $("#cell_".concat(origin)).empty();
+                        alert("Movimiento de " + origin + " a " + target + " exitoso"));
+                        $("#cell_" + origin).empty();
                         if (mouse) {
-                            $("#cell_".concat(target)).append("🐭");
+                            $("#cell_" + target).append("🐭");
                         } else {
-                            $("#cell_".concat(target)).append("🐱");
+                            $("#cell_" + target).append("🐱");
                         }
+                        cat_turn = !cat_turn;
                     }
                 };
                 xhttp.open("POST", "{% url 'move' %}", true);
@@ -64,63 +78,75 @@
         {% for item in board %}
             {% if forloop.counter0|divisibleby:8 %}<div class="row">{% endif %}
             <div class="cell {% if forloop.counter0|divisibleby:8 %}{% cycle 'black' 'white' %}{% else %}{% cycle 'white' 'black' %}{% endif %}" 
-                onclick='
-                if (cat_turn && {% if game.cat_user.id == request.user.id %}true{% else %}false{% endif %} || !cat_turn && {% if game.mouse_user.id == request.user.id %}true{% else %}false{% endif %}) {
-                    if ($("#cell_".concat({{ forloop.counter0 }})).text().length == 0) {
-                        if (cell_target_list.includes({{ forloop.counter0 }})) {
-                            send_move(cell_origin, {{ forloop.counter0 }}, target_mouse);
-                        } else if (cell_target_list.length != 0) {
-                            alert("Movimiento no válido");
-                        }
-                        for (cell in cell_target_list) {
-                            $("#cell_".concat(cell_target_list[cell])).css("background", "");
-                        }
-                        cell_target_list = []
-                    } 
-                    else if ($("#cell_".concat({{ forloop.counter0 }})).text() === '') {
-                        for (cell in cell_target_list) {
-                            $("#cell_".concat(cell_target_list[cell])).css("background", "");
-                        }
-                        cell_target_list = [];
-                        cell_origin = {{ forloop.counter0 }};
-                        target_mouse = false;
-                        {% if forloop.counter0|divisibleby:8 %}
-                            $("#cell_{{ forloop.counter0|add:9 }}").css("background", "red");
-                            cell_target_list.push({{ forloop.counter0|add:9 }});
-                        {% elif forloop.counter0|add:1|divisibleby:8 %}
-                            $("#cell_{{ forloop.counter0|add:7 }}").css("background", "red");
-                            cell_target_list.push({{ forloop.counter0|add:7 }});
-                        {% else %}
-                            $("#cell_{{ forloop.counter0|add:7 }}, #cell_{{ forloop.counter0|add:9 }}").css("background", "red");
-                            cell_target_list.push({{ forloop.counter0|add:7 }});
-                            cell_target_list.push({{ forloop.counter0|add:9 }});
-                        {% endif %}
-                    } 
-                    else if ($("#cell_".concat({{ forloop.counter0 }})).text() === '') {
-                        for (cell in cell_target_list) {
-                            $("#cell_".concat(cell_target_list[cell])).css("background", "");
-                        }
-                        cell_target_list = [];
-                        cell_origin = {{ forloop.counter0 }};
-                        target_mouse = true;
-                        {% if forloop.counter0|divisibleby:8 %}
-                            $("#cell_{{ forloop.counter0|add:"-9" }}").css("background", "red");
-                            cell_target_list.push({{ forloop.counter0|add:"-9" }});
-                        {% elif forloop.counter0|add:1|divisibleby:8 %}
-                            $("#cell_{{ forloop.counter0|add:"-7" }}").css("background", "red");
-                            cell_target_list.push({{ forloop.counter0|add:"-7" }});
-                        {% else %}
-                            $("#cell_{{ forloop.counter0|add:"-7" }}, #cell_{{ forloop.counter0|add:"-9" }}").css("background", "red");
-                            cell_target_list.push({{ forloop.counter0|add:"-7" }});
-                            cell_target_list.push({{ forloop.counter0|add:"-9" }});
-                        {% endif %}
+                onclick=
+                'if ($("#cell_" + {{ forloop.counter0 }}).text().length === 0) {
+                    if (cell_target_list.includes({{ forloop.counter0 }})) {
+                        send_move(cell_origin, {{ forloop.counter0 }}, target_mouse);
+                    } else if (cell_target_list.length != 0) {
+                        alert("Invalid move.");
                     }
-                }
-                '
+                    for (cell in cell_target_list) {
+                        $("#cell_" + cell_target_list[cell]).css("background", "");
+                    }
+                    cell_target_list = []
+                } else if ($("#cell_" + {{ forloop.counter0 }}).text() === "🐱") {
+                    if (!user_is_cat) {
+                        alert("You are not the cat player.");
+                        return;
+                    }
+                    if (!cat_turn) {
+                        alert("Not your turn. Wait until the mouse player makes a move.")
+                        return;
+                    }
+                    for (cell in cell_target_list) {
+                        $("#cell_" + cell_target_list[cell]).css("background", "");
+                    }
+                    cell_target_list = [];
+                    cell_origin = {{ forloop.counter0 }};
+                    target_mouse = false;
+
+                    {% if forloop.counter0 >= 56 %}
+                    {% elif forloop.counter0|divisibleby:8 %}
+                        $("#cell_{{ forloop.counter0|add:9 }}").css("background", "red");
+                        cell_target_list.push({{ forloop.counter0|add:9 }});
+                    {% elif forloop.counter0|add:1|divisibleby:8 %}
+                        $("#cell_{{ forloop.counter0|add:7 }}").css("background", "red");
+                        cell_target_list.push({{ forloop.counter0|add:7 }});
+                    {% else %}
+                        $("#cell_{{ forloop.counter0|add:7 }}, #cell_{{ forloop.counter0|add:9 }}").css("background", "red");
+                        cell_target_list.push({{ forloop.counter0|add:7 }});
+                        cell_target_list.push({{ forloop.counter0|add:9 }});
+                    {% endif %}
+                } else if ($("#cell_" + {{ forloop.counter0 }}).text() === "🐭") {
+                    if (user_is_cat) {
+                        alert("You are not the mouse player.");
+                        return;
+                    }
+                    if (cat_turn) {
+                        alert("Not your turn. Wait until the cat player makes a move.")
+                        return;
+                    }                        
+                    for (cell in cell_target_list) {
+                        $("#cell_" + cell_target_list[cell]).css("background", "");
+                    }
+                    cell_target_list = [];
+                    cell_origin = {{ forloop.counter0 }};
+                    target_mouse = true;
+                    {% if forloop.counter0 < 8 %}
+                    {% elif forloop.counter0|divisibleby:8 %}
+                        $("#cell_{{ forloop.counter0|add:"-9" }}").css("background", "red");
+                        cell_target_list.push({{ forloop.counter0|add:"-9" }});
+                    {% elif forloop.counter0|add:1|divisibleby:8 %}
+                        $("#cell_{{ forloop.counter0|add:"-7" }}").css("background", "red");
+                        cell_target_list.push({{ forloop.counter0|add:"-7" }});
+                    {% else %}
+                        $("#cell_{{ forloop.counter0|add:"-7" }}, #cell_{{ forloop.counter0|add:"-9" }}").css("background", "red");
+                        cell_target_list.push({{ forloop.counter0|add:"-7" }});
+                        cell_target_list.push({{ forloop.counter0|add:"-9" }});
+                    {% endif %}
+                }'
                 id="cell_{{ forloop.counter0 }}">
-                {% if item ==  0 %}   
-                {% elif item == 1 %}  🐱
-                {% else %} 🐭 {% endif %}
+                <p>{% if item ==  -1 %}🐭{% elif item == 1 %}🐱{% endif %}</p>
             </div>
             {% if forloop.counter|divisibleby:8 or forloop.last %}</div>{% endif %}
         {% endfor %}
