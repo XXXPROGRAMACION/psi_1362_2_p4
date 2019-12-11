@@ -72,15 +72,9 @@
                 xhttp.open("POST", "{% url 'move' %}", true);
                 xhttp.send(data);
             }
-        </script>
-        <!--<p>Board: {{ board }}</p>-->
-        <div id="chess_board">
-        {% for item in board %}
-            {% if forloop.counter0|divisibleby:8 %}<div class="row">{% endif %}
-            <div class="cell {% if forloop.counter0|divisibleby:8 %}{% cycle 'black' 'white' %}{% else %}{% cycle 'white' 'black' %}{% endif %}" 
-                onclick=
-                '
-                if ($("#cell_" + {{ forloop.counter0 }}).text().includes("🐱")) {
+
+            function cell_on_click(cell_id) {
+                if ($("#cell_" + cell_id).text().includes("🐱")) {
                     if (!user_is_cat) {
                         alert("You are not the cat player.");
                         return;
@@ -93,22 +87,23 @@
                         $("#cell_" + cell_target_list[cell]).css("background", "");
                     }
                     cell_target_list = [];
-                    cell_origin = {{ forloop.counter0 }};
+                    cell_origin = cell_id;
                     target_mouse = false;
 
-                    {% if forloop.counter0 >= 56 %}
-                    {% elif forloop.counter0|divisibleby:8 %}
-                        $("#cell_{{ forloop.counter0|add:9 }}").css("background", "red");
-                        cell_target_list.push({{ forloop.counter0|add:9 }});
-                    {% elif forloop.counter0|add:1|divisibleby:8 %}
-                        $("#cell_{{ forloop.counter0|add:7 }}").css("background", "red");
-                        cell_target_list.push({{ forloop.counter0|add:7 }});
-                    {% else %}
-                        $("#cell_{{ forloop.counter0|add:7 }}, #cell_{{ forloop.counter0|add:9 }}").css("background", "red");
-                        cell_target_list.push({{ forloop.counter0|add:7 }});
-                        cell_target_list.push({{ forloop.counter0|add:9 }});
-                    {% endif %}
-                } else if ($("#cell_" + {{ forloop.counter0 }}).text().includes("🐭")) {
+                    if (cell_id >= 56) {
+                        return;
+                    } else if (cell_id%8 == 0) {
+                        $("#cell_"+(cell_id+9)).css("background", "red");
+                        cell_target_list.push(cell_id+9);
+                    } else if ((cell_id+1)%8 == 0) {
+                        $("#cell_"+(cell_id+7)).css("background", "red");
+                        cell_target_list.push(cell_id+7);
+                    } else {
+                        $("#cell_"+(cell_id+7)+", #cell_"+(cell_id+9)).css("background", "red");
+                        cell_target_list.push(cell_id+7);
+                        cell_target_list.push(cell_id+9);
+                    }
+                } else if ($("#cell_" + cell_id).text().includes("🐭")) {
                     if (user_is_cat) {
                         alert("You are not the mouse player.");
                         return;
@@ -121,23 +116,25 @@
                         $("#cell_" + cell_target_list[cell]).css("background", "");
                     }
                     cell_target_list = [];
-                    cell_origin = {{ forloop.counter0 }};
+                    cell_origin = cell_id;
                     target_mouse = true;
-                    {% if forloop.counter0 < 8 %}
-                    {% elif forloop.counter0|divisibleby:8 %}
-                        $("#cell_{{ forloop.counter0|add:"-9" }}").css("background", "red");
-                        cell_target_list.push({{ forloop.counter0|add:"-9" }});
-                    {% elif forloop.counter0|add:1|divisibleby:8 %}
-                        $("#cell_{{ forloop.counter0|add:"-7" }}").css("background", "red");
-                        cell_target_list.push({{ forloop.counter0|add:"-7" }});
-                    {% else %}
-                        $("#cell_{{ forloop.counter0|add:"-7" }}, #cell_{{ forloop.counter0|add:"-9" }}").css("background", "red");
-                        cell_target_list.push({{ forloop.counter0|add:"-7" }});
-                        cell_target_list.push({{ forloop.counter0|add:"-9" }});
-                    {% endif %}
+
+                    if (cell_id < 8) {
+                        return;
+                    } else if (cell_id%8 == 0) {
+                        $("#cell_"+(cell_id-9)).css("background", "red");
+                        cell_target_list.push(cell_id-9);
+                    } else if ((cell_id+1)%8 == 0) {
+                        $("#cell_"+(cell_id-7)).css("background", "red");
+                        cell_target_list.push(cell_id-7);
+                    } else {
+                        $("#cell_"+(cell_id-7)+", #cell_"+(cell_id-9)).css("background", "red");
+                        cell_target_list.push(cell_id-7);
+                        cell_target_list.push(cell_id-9);
+                    }
                 } else {
-                    if (cell_target_list.includes({{ forloop.counter0 }})) {
-                        send_move(cell_origin, {{ forloop.counter0 }}, target_mouse);
+                    if (cell_target_list.includes(cell_id)) {
+                        send_move(cell_origin, cell_id, target_mouse);
                     } else if (cell_target_list.length != 0) {
                         alert("Invalid move.");
                     } else {
@@ -147,8 +144,15 @@
                         $("#cell_" + cell_target_list[cell]).css("background", "");
                     }
                     cell_target_list = []
-                }'
-                id="cell_{{ forloop.counter0 }}">
+                }
+            }
+        </script>
+        <!--<p>Board: {{ board }}</p>-->
+        <div id="chess_board">
+        {% for item in board %}
+            {% if forloop.counter0|divisibleby:8 %}<div class="row">{% endif %}
+            <div class="cell {% if forloop.counter0|divisibleby:8 %}{% cycle 'black' 'white' %}{% else %}{% cycle 'white' 'black' %}{% endif %}" 
+                onclick="cell_on_click({{ forloop.counter0 }})" id="cell_{{ forloop.counter0 }}">
                 <p>{% if item ==  -1 %}🐭{% elif item == 1 %}🐱{% endif %}</p>
             </div>
             {% if forloop.counter|divisibleby:8 or forloop.last %}</div>{% endif %}
