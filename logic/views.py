@@ -1,4 +1,4 @@
-from django.http import HttpResponseForbidden, HttpResponseNotFound
+from django.http import HttpResponseForbidden, HttpResponseNotFound, JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
@@ -8,7 +8,6 @@ from datamodel import constants
 from datamodel.models import Game, GameStatus, Move, Counter
 from django.db.models import Q
 from django.views.decorators.http import require_http_methods
-
 
 # Autor: Alejandro Pascual Pozo
 def errorHTTP(request, exception=None, status=200):
@@ -210,11 +209,56 @@ def show_game_service(request):
     board[game.cat3] = 1
     board[game.cat4] = 1
     board[game.mouse] = -1
-
-    move_form = MoveForm()
     
-    context_dict = { 'game': game, 'board': board, 'move_form': move_form }
+    context_dict = {'game': game, 'board': board}
     return render(request, 'mouse_cat/game.html', context_dict)
+
+
+@login_required
+@require_http_methods(['POST'])
+def get_board(request):
+    if 'game_selected' not in request.session:
+        return errorHTTP(
+            request,
+            exception='You have not selected a game',
+            status=404
+        )
+
+    game_id = request.session['game_selected']
+    games = Game.objects.filter(id=game_id)
+
+    if len(games) == 0:
+        return errorHTTP(
+            request,
+            exception='The selected game is not valid',
+            status=404
+        )
+
+    game = games[0]
+
+    if game.status != GameStatus.ACTIVE:
+        return errorHTTP(
+            request,
+            exception='The selected game is not active',
+            status=404
+        )
+
+    if game.cat_user != request.user and game.mouse_user != request.user:
+        return errorHTTP(
+            request,
+            exception='You are not a player of the selected game',
+            status=404
+        )
+
+    board = [0]*64
+    board[game.cat1] = 1
+    board[game.cat2] = 1
+    board[game.cat3] = 1
+    board[game.cat4] = 1
+    board[game.mouse] = -1
+
+    return JsonResponse(board, safe=False)
+
 
 
 # Autor: Alejandro Pascual Pozo

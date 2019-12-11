@@ -37,6 +37,8 @@
             target_mouse = false;
             cat_turn = {% if game.cat_turn %}true{% else %}false{% endif %};
             user_is_cat = {% if game.cat_user.id == request.user.id %}true{% else %}false{% endif %};
+            board = {{ board }}
+            console.log(board);
 
             function update_board(board) {
                 for (let i = 0; i < 64; i++) {
@@ -61,10 +63,13 @@
                         // Realizar movimiento en el cliente 
                         alert("Movement from " + origin + " to " + target + " succesful");
                         $("#cell_" + origin).empty();
+                        board[origin] = 0
                         if (mouse) {
                             $("#cell_" + target).append("🐭");
+                            board[target] = -1;
                         } else {
                             $("#cell_" + target).append("🐱");
+                            board[target] = 1;
                         }
                         cat_turn = !cat_turn;
                     }
@@ -137,7 +142,7 @@
                         send_move(cell_origin, cell_id, target_mouse);
                     } else if (cell_target_list.length != 0) {
                         alert("Invalid move.");
-                    } else {
+                    } else if (cat_turn != user_is_cat) {
                         alert("Not your turn.");
                     }
                     for (cell in cell_target_list) {
@@ -146,6 +151,41 @@
                     cell_target_list = []
                 }
             }
+
+            function get_and_print_board() {
+                if (cat_turn == user_is_cat) {
+                    return;
+                }
+                var data = new FormData();
+                data.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        are_equal = true;
+                        new_board = []
+                        aux = this.response.replace("[", "").replace("]", "").replace(" ", "").split(",");
+                        for (i = 0; i < aux.length; i++) {
+                            new_board[i] = parseInt(aux[i]);
+                            if (new_board[i] !== board[i]) {
+                                are_equal = false;
+                            }
+                        }
+                        console.log(new_board);
+                        if (are_equal) {
+                            return;
+                        } else {
+                            board = new_board;
+                            update_board(board);
+                            alert("Now is your turn!");
+                            cat_turn = !cat_turn;
+                        }
+                    }
+                };
+                xhttp.open("POST", "{% url 'get_board' %}", true);
+                xhttp.send(data);
+            }
+
+            setInterval(get_and_print_board, 500);
         </script>
         <!--<p>Board: {{ board }}</p>-->
         <div id="chess_board">
