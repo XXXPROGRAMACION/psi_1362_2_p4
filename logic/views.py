@@ -167,6 +167,22 @@ def select_game_service(request, game_id=None):
         return render(request, 'mouse_cat/select_game.html', context_dict)
 
 
+# Autor: Alejandro Pascual Pozo
+@login_required
+@require_http_methods(['GET', 'POST'])
+def select_replay_service(request, game_id=None):
+    if game_id is not None:
+        request.session['game_selected'] = game_id
+        return redirect(reverse('show_replay'))
+    else:
+        games = Game.objects.exclude(status=GameStatus.ACTIVE)
+        if len(games) == 0:
+            games = None
+
+        context_dict = {'games': games}
+        return render(request, 'mouse_cat/select_replay.html', context_dict)
+
+
 # Autor: Víctor Yrazusta Ibarra
 @login_required
 @require_http_methods(['GET'])
@@ -213,6 +229,39 @@ def show_game_service(request):
     
     context_dict = {'game': game, 'board': board}
     return render(request, 'mouse_cat/game.html', context_dict)
+
+# Autor: Víctor Yrazusta Ibarra
+@login_required
+@require_http_methods(['GET'])
+def show_replay_service(request):
+    if 'game_selected' not in request.session:
+        return errorHTTP(
+            request,
+            exception='You have not selected a game',
+            status=404
+        )
+
+    game_id = request.session['game_selected']
+    games = Game.objects.filter(id=game_id)
+
+    if len(games) == 0:
+        return errorHTTP(
+            request,
+            exception='The selected game is not valid',
+            status=404
+        )
+
+    game = games[0]
+
+    board = [0]*64
+    board[game.cat1] = 1
+    board[game.cat2] = 1
+    board[game.cat3] = 1
+    board[game.cat4] = 1
+    board[game.mouse] = -1
+    
+    context_dict = {'game': game, 'board': board}
+    return render(request, 'mouse_cat/replay.html', context_dict)
 
 
 @login_required
@@ -365,4 +414,47 @@ def move_service(request):
 @login_required
 @require_http_methods(['POST'])
 def get_move_service(request):
-    return None
+    if 'game_selected' not in request.session:
+        return errorHTTP(
+            request,
+            exception='You have not selected a game',
+            status=404
+        )
+
+    game_id = request.session['game_selected']
+    games = Game.objects.filter(id=game_id)
+
+    if len(games) == 0:
+        return errorHTTP(
+            request,
+            exception='The selected game is not valid',
+            status=404
+        )
+
+    game = games[0]
+
+    if game.status != GameStatus.ACTIVE:
+        return errorHTTP(
+            request,
+            exception='The selected game is not active',
+            status=404
+        )
+
+    moves = Move.objects.filter(game=game_id).order_by('date')
+    move_number = request.POST.get('move_number')
+
+    if move_number >= len(moves):
+        return errorHTTP(
+            request,
+            exception='The selected move does not exist',
+            status=404
+        )
+
+    previous_exists = (move_number != 0)
+    next_exists = (move_number != len(moves)-1)
+    origin = moves[move_number].origin
+    target = moves[move_number].target
+
+    data = {'previous': previous_exists, 'next': next_exists, 'origin': origin, 'target': target}
+
+    return JsonResponse(data, safe=False)

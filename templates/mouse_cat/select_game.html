@@ -11,7 +11,7 @@
                 <li> <a href="{% url 'select_game' game.id %}">{{ game }}</a></li>
             {% endfor %}
             </ul>
-        {%  else %}
+        {% else %}
             No games as cat
         {% endif %}
     </p>
@@ -24,7 +24,7 @@
                 <li> <a href="{% url 'select_game' game.id %}">{{ game }}</a></li>
             {% endfor %}
             </ul>
-        {%  else %}
+        {% else %}
             No games as mouse
         {% endif %}
     </p>

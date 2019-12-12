@@ -1,0 +1,104 @@
+{% extends "mouse_cat/base.html" %}
+
+{% block content %}
+<div id="content">
+    <h1>Play</h1>
+    <p>Game: <b>{{ game.id }}</b></p>
+    <form id="move_form" method="post" action="{% url 'move' %}">
+        {% csrf_token %}
+        <p>
+            Cats: <b>{{ game.cat_user.username }}</b>
+            {% if game.cat_user.id == request.user.id %}
+                <blockquote class="cat">
+                    {% if not game.cat_turn %}
+                        Waiting for the mouse...
+                        <a style="margin-left:20px;font-weight:normal" href="{% url 'show_game' %}">Refresh</a>
+                    {% endif %}
+                </blockquote>
+            {% endif %}
+        </p>
+        <p>
+            Mouse: <b>{{ game.mouse_user.username }}</b>
+            {% if game.mouse_user.id == request.user.id %}
+                <blockquote class="mouse">
+                    {% if game.cat_turn %}
+                        Waiting for the cat...
+                        <a style="margin-left:20px;font-weight:normal" href="{% url 'show_game' %}">Refresh</a>
+                    {% endif %}
+                </blockquote>
+            {% endif %}
+        </p>
+    </form>
+
+    {% if board %}
+        <script>
+            cell_target_list = [];
+            cell_origin = -1;
+            target_mouse = false;
+            cat_turn = {% if game.cat_turn %}true{% else %}false{% endif %};
+            user_is_cat = {% if game.cat_user.id == request.user.id %}true{% else %}false{% endif %};
+            board = {{ board }}
+            console.log(board);
+
+            function update_board(board) {
+                for (let i = 0; i < 64; i++) {
+                    if (board[i] == -1) {
+                        $("#cell_" + i).text("🐭");
+                    } else if (board[i] == 1) {
+                        $("#cell_" + i).text("🐱");
+                    } else {
+                        $("#cell_" + i).empty();
+                    }
+                }
+            }
+
+            function get_and_print_board() {
+                if (cat_turn == user_is_cat) {
+                    return;
+                }
+                var data = new FormData();
+                var date = new Date();
+                data.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        if (this.response.length < 20) {
+                            return;
+                        }
+                        are_equal = true;
+                        new_board = []
+                        aux = this.response.replace("[", "").replace("]", "").replace(" ", "").split(",");
+                        for (i = 0; i < aux.length; i++) {
+                            new_board[i] = parseInt(aux[i]);
+                            if (new_board[i] !== board[i]) {
+                                are_equal = false;
+                            }
+                        }
+                        if (are_equal) {
+                            return;
+                        } else {
+                            board = new_board;
+                            update_board(board);
+                            alert("Now is your turn!");
+                            cat_turn = !cat_turn;
+                        }
+                    }
+                };
+                xhttp.open("POST", "{% url 'get_update' %}", true);
+                xhttp.send(data);
+            }
+        </script>
+        <div id="chess_board">
+        {% for item in board %}
+            {% if forloop.counter0|divisibleby:8 %}<div class="row">{% endif %}
+            <div class="cell {% if forloop.counter0|divisibleby:8 %}{% cycle 'black' 'white' %}{% else %}{% cycle 'white' 'black' %}{% endif %}" id="cell_{{ forloop.counter0 }}">
+                <p>{% if item ==  -1 %}🐭{% elif item == 1 %}🐱{% endif %}</p>
+            </div>
+            {% if forloop.counter|divisibleby:8 or forloop.last %}</div>{% endif %}
+        {% endfor %}
+        </div>
+    {% endif %}
+
+    <p><a href="{% url 'landing' %}">Return to homepage</a></p>
+</div>
+{% endblock content %}
