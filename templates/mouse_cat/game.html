@@ -38,16 +38,45 @@
             cat_turn = {% if game.cat_turn %}true{% else %}false{% endif %};
             user_is_cat = {% if game.cat_user.id == request.user.id %}true{% else %}false{% endif %};
             board = {{ board }}
-            console.log(board);
+            game_finished = false;
+            cats = []
+            cats.push({{ game.cat1 }})
+            cats.push({{ game.cat2 }})
+            cats.push({{ game.cat3 }})
+            cats.push({{ game.cat4 }})
+            mouse = {{ game.mouse }}
+
+            function mouse_is_trapped(cat1, cat2, cat3, cat4, mouse) {
+                if (mouse+9 < 64 && mouse+9 != cat1 && mouse+9 != cat2 && mouse+9 != cat3 && mouse+9 != cat4 && (mouse+1)%8 != 0) return false;
+                if (mouse+7 < 64 && mouse+7 != cat1 && mouse+7 != cat2 && mouse+7 != cat3 && mouse+7 != cat4 && mouse%8 != 0) return false;
+                if (mouse-9 >= 0 && mouse-9 != cat1 && mouse-9 != cat2 && mouse-9 != cat3 && mouse-9 != cat4 && mouse%8 != 0) return false;
+                if (mouse-7 >= 0 && mouse-7 != cat1 && mouse-7 != cat2 && mouse-7 != cat3 && mouse-7 != cat4 && (mouse+1)%8 != 0) return false;
+                return true;
+            }
 
             function update_board(board) {
+                let j = 0;
+                cats = []
                 for (let i = 0; i < 64; i++) {
                     if (board[i] == -1) {
                         $("#cell_" + i).text("🐭");
+                        mouse = i;
                     } else if (board[i] == 1) {
                         $("#cell_" + i).text("🐱");
+                        cats[j] = i;
+                        j++;
                     } else {
                         $("#cell_" + i).empty();
+                    }
+                }
+
+                if (mouse_is_trapped(cat[0], cat[1], cat[2], cat[3], mouse)) 
+                    game_finished = true;
+                    clearInterval(interval);
+                    if (user_is_cat) {
+                        alert("Congratulations! You've won the game");
+                    } else {
+                        alert("Sadly you've lost the game :(");
                     }
                 }
             }
@@ -67,9 +96,12 @@
                         if (mouse) {
                             $("#cell_" + target).append("🐭");
                             board[target] = -1;
+                            mouse = target
                         } else {
                             $("#cell_" + target).append("🐱");
                             board[target] = 1;
+                            cats.splice(cats.indexOf(origin), 1);
+                            cats.push(target);
                         }
                         cat_turn = !cat_turn;
                     }
@@ -165,7 +197,7 @@
             }
 
             function get_and_print_board() {
-                if (cat_turn == user_is_cat) {
+                if (cat_turn == user_is_cat || game_finished) {
                     return;
                 }
                 var data = new FormData();
@@ -200,7 +232,7 @@
                 xhttp.send(data);
             }
 
-            setInterval(get_and_print_board, 500);
+            interval = setInterval(get_and_print_board, 500);
         </script>
         <div id="chess_board">
         {% for item in board %}

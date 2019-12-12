@@ -206,13 +206,6 @@ def show_game_service(request):
 
     game = games[0]
 
-    if game.status != GameStatus.ACTIVE:
-        return errorHTTP(
-            request,
-            exception='The selected game is not active',
-            status=404
-        )
-
     if game.cat_user != request.user and game.mouse_user != request.user:
         return errorHTTP(
             request,
@@ -259,7 +252,7 @@ def show_replay_service(request):
     board[game.cat3] = 1
     board[game.cat4] = 1
     board[game.mouse] = -1
-    
+
     context_dict = {'game': game, 'board': board}
     return render(request, 'mouse_cat/replay.html', context_dict)
 
@@ -285,13 +278,6 @@ def get_update(request):
         )
 
     game = games[0]
-
-    if game.status != GameStatus.ACTIVE:
-        return errorHTTP(
-            request,
-            exception='The selected game is not active',
-            status=404
-        )
 
     if game.cat_user != request.user and game.mouse_user != request.user:
         return errorHTTP(
@@ -335,13 +321,6 @@ def get_board(request):
         )
 
     game = games[0]
-
-    if game.status != GameStatus.ACTIVE:
-        return errorHTTP(
-            request,
-            exception='The selected game is not active',
-            status=404
-        )
 
     if game.cat_user != request.user and game.mouse_user != request.user:
         return errorHTTP(
