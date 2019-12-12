@@ -4,7 +4,7 @@
 <div id="content">
     <h1>Select the game that you want to replay:</h1>
     <p>
-        {% if game %}
+        {% if games %}
             <ul>
             {% for game in games %}
                 <li> <a href="{% url 'select_replay' game.id %}">{{ game }}</a></li>

@@ -6,6 +6,16 @@ from datetime import datetime
 from datamodel import constants
 from django.utils import timezone
 
+def mouse_is_trapped(cat1, cat2, cat3, cat4, mouse):
+    if (mouse+9 < 64 and mouse+9 != cat1 and mouse+9 != cat2 and mouse+9 != cat3 and mouse+9 != cat4 and (mouse+1)%8 != 0):
+        return False
+    if (mouse+7 < 64 and mouse+7 != cat1 and mouse+7 != cat2 and mouse+7 != cat3 and mouse+7 != cat4 and mouse%8 != 0):
+        return False
+    if (mouse-9 >= 0 and mouse-9 != cat1 and mouse-9 != cat2 and mouse-9 != cat3 and mouse-9 != cat4 and mouse%8 != 0):
+        return False
+    if (mouse-7 >= 0 and mouse-7 != cat1 and mouse-7 != cat2 and mouse-7 != cat3 and mouse-7 != cat4 and (mouse+1)%8 != 0):
+        return False
+    return True
 
 class GameStatus(IntEnum):
     CREATED = 0
@@ -157,6 +167,10 @@ class Move(models.Model):
                 self.game.cat4 = self.target
             else:
                 raise ValidationError(constants.MSG_ERROR_MOVE)
+
+            if mouse_is_trapped(self.game.cat1, self.game.cat2, self.game.cat3, self.game.cat4, self.game.mouse):
+                self.game.status = GameStatus.FINISHED
+
         elif self.game.cat_turn is False and self.game.mouse_user == self.player:
             if not (self.origin%8 != 0 and (self.target == self.origin+7 or self.target == self.origin-9)):
                 if not (self.origin%8 != 7 and (self.target == self.origin+9 or self.target == self.origin-7)):
@@ -168,6 +182,7 @@ class Move(models.Model):
                 raise ValidationError(constants.MSG_ERROR_MOVE)
         else:
             raise ValidationError(constants.MSG_ERROR_MOVE)
+
         
         self.game.cat_turn = not self.game.cat_turn
         self.game.save()

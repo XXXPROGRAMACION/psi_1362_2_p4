@@ -61,7 +61,7 @@
                 xhttp.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
                         // Realizar movimiento en el cliente 
-                        alert("Movement from " + origin + " to " + target + " succesful");
+                        //alert("Movement from " + origin + " to " + target + " succesful");
                         $("#cell_" + origin).empty();
                         board[origin] = 0
                         if (mouse) {
@@ -125,18 +125,30 @@
                     target_mouse = true;
 
                     if (cell_id < 8) {
-                        return;
                     } else if (cell_id%8 == 0) {
-                        $("#cell_"+(cell_id-9)).css("background", "red");
-                        cell_target_list.push(cell_id-9);
-                    } else if ((cell_id+1)%8 == 0) {
                         $("#cell_"+(cell_id-7)).css("background", "red");
                         cell_target_list.push(cell_id-7);
+                    } else if ((cell_id+1)%8 == 0) {
+                        $("#cell_"+(cell_id-9)).css("background", "red");
+                        cell_target_list.push(cell_id-9);
                     } else {
                         $("#cell_"+(cell_id-7)+", #cell_"+(cell_id-9)).css("background", "red");
                         cell_target_list.push(cell_id-7);
                         cell_target_list.push(cell_id-9);
                     }
+                    if (cell_id >= 56) {
+                    } else if (cell_id%8 == 0) {
+                        $("#cell_"+(cell_id+9)).css("background", "red");
+                        cell_target_list.push(cell_id+9);
+                    } else if ((cell_id+1)%8 == 0) {
+                        $("#cell_"+(cell_id+7)).css("background", "red");
+                        cell_target_list.push(cell_id+7);
+                    } else {
+                        $("#cell_"+(cell_id+7)+", #cell_"+(cell_id+9)).css("background", "red");
+                        cell_target_list.push(cell_id+7);
+                        cell_target_list.push(cell_id+9);
+                    }
+
                 } else {
                     if (cell_target_list.includes(cell_id)) {
                         send_move(cell_origin, cell_id, target_mouse);
@@ -179,7 +191,7 @@
                         } else {
                             board = new_board;
                             update_board(board);
-                            alert("Now is your turn!");
+                            //alert("Now is your turn!");
                             cat_turn = !cat_turn;
                         }
                     }

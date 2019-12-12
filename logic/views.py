@@ -175,7 +175,7 @@ def select_replay_service(request, game_id=None):
         request.session['game_selected'] = game_id
         return redirect(reverse('show_replay'))
     else:
-        games = Game.objects.exclude(status=GameStatus.ACTIVE)
+        games = Game.objects.filter(status=GameStatus.FINISHED)
         if len(games) == 0:
             games = None
 
