@@ -8,6 +8,7 @@ from datamodel import constants
 from datamodel.models import Game, GameStatus, Move, Counter
 from django.db.models import Q
 from django.views.decorators.http import require_http_methods
+from datetime import datetime, timezone
 
 # Autor: Alejandro Pascual Pozo
 def errorHTTP(request, exception=None, status=200):
@@ -212,6 +213,56 @@ def show_game_service(request):
     
     context_dict = {'game': game, 'board': board}
     return render(request, 'mouse_cat/game.html', context_dict)
+
+
+@login_required
+@require_http_methods(['POST'])
+def get_update(request):    
+    if 'game_selected' not in request.session:
+        return errorHTTP(
+            request,
+            exception='You have not selected a game',
+            status=404
+        )
+
+    game_id = request.session['game_selected']
+    games = Game.objects.filter(id=game_id)
+
+    if len(games) == 0:
+        return errorHTTP(
+            request,
+            exception='The selected game is not valid',
+            status=404
+        )
+
+    game = games[0]
+
+    if game.status != GameStatus.ACTIVE:
+        return errorHTTP(
+            request,
+            exception='The selected game is not active',
+            status=404
+        )
+
+    if game.cat_user != request.user and game.mouse_user != request.user:
+        return errorHTTP(
+            request,
+            exception='You are not a player of the selected game',
+            status=404
+        )
+
+    lasts_moves = Move.objects.filter(game=game_id).order_by('-date')
+    if (len(lasts_moves) == 0):
+        ret = 0
+        return JsonResponse(ret, safe=False)
+
+    last_move = lasts_moves[0]
+
+    if datetime.now(timezone.utc) > last_move.date:
+        return get_board(request)
+    
+    ret = 0
+    return JsonResponse(ret, safe=False)
 
 
 @login_required

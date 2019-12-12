@@ -157,10 +157,14 @@
                     return;
                 }
                 var data = new FormData();
+                var date = new Date();
                 data.append('csrfmiddlewaretoken', '{{ csrf_token }}');
                 var xhttp = new XMLHttpRequest();
                 xhttp.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
+                        if (this.response.length < 20) {
+                            return;
+                        }
                         are_equal = true;
                         new_board = []
                         aux = this.response.replace("[", "").replace("]", "").replace(" ", "").split(",");
@@ -170,7 +174,6 @@
                                 are_equal = false;
                             }
                         }
-                        console.log(new_board);
                         if (are_equal) {
                             return;
                         } else {
@@ -181,13 +184,12 @@
                         }
                     }
                 };
-                xhttp.open("POST", "{% url 'get_board' %}", true);
+                xhttp.open("POST", "{% url 'get_update' %}", true);
                 xhttp.send(data);
             }
 
             setInterval(get_and_print_board, 500);
         </script>
-        <!--<p>Board: {{ board }}</p>-->
         <div id="chess_board">
         {% for item in board %}
             {% if forloop.counter0|divisibleby:8 %}<div class="row">{% endif %}

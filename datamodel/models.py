@@ -4,6 +4,7 @@ from enum import IntEnum
 from django.core.exceptions import ValidationError
 from datetime import datetime
 from datamodel import constants
+from django.utils import timezone
 
 
 class GameStatus(IntEnum):
@@ -105,12 +106,11 @@ class Move(models.Model):
     target = models.IntegerField(null=False)
     game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='moves')
     player = models.ForeignKey(User, on_delete=models.CASCADE, related_name='moves')
-    date = models.DateField(null=False)
+    date = models.DateTimeField(null=False, default=timezone.now)
 
     # Autor: Víctor Yrazusta Ibarra
     def __init__(self, *args, **kwargs):
         super(Move, self).__init__(*args, **kwargs)
-        self.date = datetime.now()
 
     # Autor: Alejandro Pascual Pozo
     def save(self, *args, **kwargs):
