@@ -37,6 +37,7 @@ SECRET_KEY = 'v)=0$m=w3lm7govsno+dm6q15a1ga_2x1dq!71+%!oeo#9s0wb'
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    # Link práctica 4
     u'fierce-earth-21970.herokuapp.com',
     u'localhost',
     u'127.0.0.1'
