@@ -74,6 +74,10 @@ class Game(models.Model):
         self.validate()
         if self.status == GameStatus.CREATED and self.mouse_user is not None:
             self.status = GameStatus.ACTIVE
+        if self.status == GameStatus.ACTIVE and mouse_is_trapped(self.cat1, self.cat2, self.cat3, self.cat4, self.mouse):
+            self.status = GameStatus.FINISHED
+        elif self.status == GameStatus.ACTIVE and mouse_has_scaped(self.cat1, self.cat2, self.cat3, self.cat4, self.mouse):
+            self.status = GameStatus.FINISHED
         super(Game, self).save(*args, **kwargs)
 
     # Autor: Víctor Yrazusta Ibarra
