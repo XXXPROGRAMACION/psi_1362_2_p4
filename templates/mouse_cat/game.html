@@ -344,7 +344,6 @@
             {% if forloop.counter|divisibleby:8 or forloop.last %}</div>{% endif %}
         {% endfor %}
         </div>
-    {% endif %}
 
     <p class="status">
         {% if game.cat_user.id == request.user.id and game.cat_turn or game.cat_user.id != request.user.id and not game.cat_turn %}
@@ -357,6 +356,7 @@
             {% endif %}
         {% endif %}
     </p>
+    {% endif %}
 
     <p><a href="{% url 'landing' %}">Return to homepage</a></p>
 </div>
