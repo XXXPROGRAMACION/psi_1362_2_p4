@@ -151,36 +151,60 @@ def join_game_service(request):
 # Autor: Alejandro Pascual Pozo
 @login_required
 @require_http_methods(['GET', 'POST'])
-def select_game_service(request, game_id=None):
+def select_game_service(request, game_type=None, game_id=None):
     if game_id is not None:
-        request.session['game_selected'] = game_id
-        return redirect(reverse('show_game'))
+        if game_type == 'current':
+            request.session['game_selected'] = game_id
+            return redirect(reverse('show_game'))
+        elif game_type == 'open':
+            games = Game.objects.filter(id=game_id)
+            if len(games) == 0:
+                context_dict = { 'msg_error': 'The game does not exist' }
+            elif games[0].status == GameStatus.CREATED:
+                games[0].mouse_user = request.user
+                games[0].save()
+                context_dict = { 'game': games[0] }
+            else:
+                context_dict = { 'msg_error': 'There game is no longer open' }
+            return render(request, 'mouse_cat/join_game.html', context_dict)
+        elif game_type == 'replay':
+            request.session['game_selected'] = game_id
+            return redirect(reverse('show_relay'))
+        else:
+            return errorHTTP(
+                request,
+                exception='The game category selected was not found.',
+                status=400
+            )
     else:
-        as_cat = Game.objects.filter(cat_user=request.user).filter(status=GameStatus.ACTIVE)
-        if len(as_cat) == 0:
-            as_cat = None
-        as_mouse = Game.objects.filter(mouse_user=request.user).filter(status=GameStatus.ACTIVE)
-        if len(as_mouse) == 0:
-            as_mouse = None
-
-        context_dict = { 'as_cat': as_cat, 'as_mouse': as_mouse }
+        if game_type == 'current':
+            as_cat = Game.objects.filter(cat_user=request.user).filter(status=GameStatus.ACTIVE).order_by('-id')
+            if len(as_cat) == 0:
+                as_cat = None
+            as_mouse = Game.objects.filter(mouse_user=request.user).filter(status=GameStatus.ACTIVE).order_by('-id')
+            if len(as_mouse) == 0:
+                as_mouse = None
+            context_dict = { 'as_cat': as_cat, 'as_mouse': as_mouse, 'game_type': 'current' }
+        elif game_type == 'open':
+            as_mouse = Game.objects.filter(status=GameStatus.CREATED).filter(~Q(cat_user=request.user)).order_by('-id')
+            if len(as_mouse) == 0:
+                as_mouse = None
+            context_dict = { 'as_mouse': as_mouse, 'game_type': 'open' }        
+        elif game_type == 'replay':
+            as_cat = Game.objects.filter(cat_user=request.user).filter(status=GameStatus.FINISHED).order_by('-id')
+            if len(as_cat) == 0:
+                as_cat = None
+            as_mouse = Game.objects.filter(mouse_user=request.user).filter(status=GameStatus.FINISHED).order_by('-id')
+            if len(as_mouse) == 0:
+                as_mouse = None
+            context_dict = { 'as_cat': as_cat, 'as_mouse': as_mouse, 'game_type': 'replay' }
+        else:
+            return errorHTTP(
+                request,
+                exception='The game category selected was not found.',
+                status=400
+            )
         return render(request, 'mouse_cat/select_game.html', context_dict)
-
-
-# Autor: Alejandro Pascual Pozo
-@login_required
-@require_http_methods(['GET', 'POST'])
-def select_replay_service(request, game_id=None):
-    if game_id is not None:
-        request.session['game_selected'] = game_id
-        return redirect(reverse('show_replay'))
-    else:
-        games = Game.objects.filter(status=GameStatus.FINISHED)
-        if len(games) == 0:
-            games = None
-
-        context_dict = {'games': games}
-        return render(request, 'mouse_cat/select_replay.html', context_dict)
 
 
 # Autor: Víctor Yrazusta Ibarra
