@@ -1,9 +1,9 @@
-from django.http import HttpResponseForbidden, HttpResponseNotFound, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from logic.forms import SignupForm, MoveForm, LoginForm
+from logic.forms import SignupForm, LoginForm
 from datamodel import constants
 from datamodel.models import Game, GameStatus, Move, Counter
 from django.db.models import Q
@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from django.core.paginator import Paginator
 
 ELEMENTS_PER_PAGE = 3
+
 
 # Autor: Alejandro Pascual Pozo
 def errorHTTP(request, exception=None, status=200):
@@ -37,7 +38,7 @@ def anonymous_required(f):
 
 # Autor: Alejandro Pascual Pozo
 @require_http_methods(['GET'])
-def index(request):    
+def index(request):
     return render(request, 'mouse_cat/index.html')
 
 
@@ -51,7 +52,10 @@ def login_service(request):
         password = request.POST.get('password')
         login_form = LoginForm(data=request.POST)
         return_service = request.POST.get('return_service', '/index/')
-        context_dict = { 'user_form': login_form, 'return_service': return_service }
+        context_dict = {
+            'user_form': login_form,
+            'return_service': return_service
+        }
 
         user = authenticate(username=username, password=password)
 
@@ -61,7 +65,10 @@ def login_service(request):
                 request.session['counter_session'] = 0
                 return redirect(return_service)
             else:
-                login_form.add_error(None, 'La cuenta indicada se encuentra deshabilitada')
+                login_form.add_error(
+                    None,
+                    'La cuenta indicada se encuentra deshabilitada'
+                )
                 return render(request, 'mouse_cat/login.html', context_dict)
         else:
             login_form.add_error(None, 'Username/password is not valid')
@@ -69,7 +76,10 @@ def login_service(request):
     else:
         login_form = LoginForm()
         return_service = request.GET.get('next', '/index/')
-        context_dict = { 'user_form': login_form, 'return_service': return_service }
+        context_dict = {
+            'user_form': login_form,
+            'return_service': return_service
+        }
         return render(request, 'mouse_cat/login.html', context_dict)
 
 
@@ -77,7 +87,7 @@ def login_service(request):
 @login_required
 @require_http_methods(['GET'])
 def logout_service(request):
-    context_dict = { 'user': request.user.username }
+    context_dict = {'user': request.user.username}
     logout(request)
     return render(request, 'mouse_cat/logout.html', context_dict)
 
@@ -100,7 +110,7 @@ def signup_service(request):
     else:
         signup_form = SignupForm()
 
-    context_dict = { 'user_form': signup_form }
+    context_dict = {'user_form': signup_form}
     return render(request, 'mouse_cat/signup.html', context_dict)
 
 
@@ -112,7 +122,10 @@ def counter_service(request):
     counter_session = request.session['counter_session']
     counter_global = Counter.objects.get_current_value()
 
-    context_dict = { 'counter_session': counter_session, 'counter_global': counter_global }
+    context_dict = {
+        'counter_session': counter_session,
+        'counter_global': counter_global
+    }
     return render(request, 'mouse_cat/counter.html', context_dict)
 
 
@@ -131,7 +144,7 @@ def inc_counters(request):
 def create_game_service(request):
     game = Game(cat_user=request.user)
     game.save()
-    context_dict = { 'game': game }
+    context_dict = {'game': game}
     return render(request, 'mouse_cat/new_game.html', context_dict)
 
 
@@ -139,15 +152,19 @@ def create_game_service(request):
 @login_required
 @require_http_methods(['GET'])
 def join_game_service(request):
-    open_games = Game.objects.filter(status=GameStatus.CREATED).filter(~Q(cat_user=request.user)).order_by('-id')
+    open_games = Game.objects.filter(
+        status=GameStatus.CREATED
+    ).filter(
+        ~Q(cat_user=request.user)
+    ).order_by('-id')
     if len(open_games) > 0:
         game = open_games[0]
         game.mouse_user = request.user
         game.save()
-        context_dict = { 'game': game }
+        context_dict = {'game': game}
     else:
-        context_dict = { 'msg_error': 'There is no available games' }   
-     
+        context_dict = {'msg_error': 'There is no available games'}
+
     return render(request, 'mouse_cat/join_game.html', context_dict)
 
 
@@ -162,13 +179,13 @@ def select_game_service(request, game_type=None, game_id=None):
         elif game_type == 'open':
             games = Game.objects.filter(id=game_id)
             if len(games) == 0:
-                context_dict = { 'msg_error': 'The game does not exist' }
+                context_dict = {'msg_error': 'The game does not exist'}
             elif games[0].status == GameStatus.CREATED:
                 games[0].mouse_user = request.user
                 games[0].save()
-                context_dict = { 'game': games[0] }
+                context_dict = {'game': games[0]}
             else:
-                context_dict = { 'msg_error': 'There game is no longer open' }
+                context_dict = {'msg_error': 'There game is no longer open'}
             return render(request, 'mouse_cat/join_game.html', context_dict)
         elif game_type == 'replay':
             request.session['game_selected'] = game_id
@@ -182,16 +199,48 @@ def select_game_service(request, game_type=None, game_id=None):
             )
     else:
         if game_type == 'current':
-            as_cat = Game.objects.filter(cat_user=request.user).filter(status=GameStatus.ACTIVE).order_by('-id')
-            as_mouse = Game.objects.filter(mouse_user=request.user).filter(status=GameStatus.ACTIVE).order_by('-id')
-            context_dict = { 'cat_num_pages': len(as_cat)//ELEMENTS_PER_PAGE, 'mouse_num_pages': len(as_mouse)//ELEMENTS_PER_PAGE, 'game_type': 'current' }
+            as_cat = Game.objects.filter(
+                cat_user=request.user
+            ).filter(
+                status=GameStatus.ACTIVE
+            ).order_by('-id')
+            as_mouse = Game.objects.filter(
+                mouse_user=request.user
+            ).filter(
+                status=GameStatus.ACTIVE
+            ).order_by('-id')
+            context_dict = {
+                'cat_num_pages': len(as_cat)//ELEMENTS_PER_PAGE,
+                'mouse_num_pages': len(as_mouse)//ELEMENTS_PER_PAGE,
+                'game_type': 'current'
+            }
         elif game_type == 'open':
-            as_mouse = Game.objects.filter(status=GameStatus.CREATED).filter(~Q(cat_user=request.user)).order_by('-id')
-            context_dict = { 'cat_num_pages': 0, 'mouse_num_pages': len(as_mouse)//ELEMENTS_PER_PAGE, 'game_type': 'open' }        
+            as_mouse = Game.objects.filter(
+                status=GameStatus.CREATED
+            ).filter(
+                ~Q(cat_user=request.user)
+            ).order_by('-id')
+            context_dict = {
+                'cat_num_pages': 0,
+                'mouse_num_pages': len(as_mouse)//ELEMENTS_PER_PAGE,
+                'game_type': 'open'
+            }
         elif game_type == 'replay':
-            as_cat = Game.objects.filter(cat_user=request.user).filter(status=GameStatus.FINISHED).order_by('-id')
-            as_mouse = Game.objects.filter(mouse_user=request.user).filter(status=GameStatus.FINISHED).order_by('-id')
-            context_dict = { 'cat_num_pages': len(as_cat)//ELEMENTS_PER_PAGE, 'mouse_num_pages': len(as_mouse)//ELEMENTS_PER_PAGE, 'game_type': 'replay' }
+            as_cat = Game.objects.filter(
+                cat_user=request.user
+            ).filter(
+                status=GameStatus.FINISHED
+            ).order_by('-id')
+            as_mouse = Game.objects.filter(
+                mouse_user=request.user
+            ).filter(
+                status=GameStatus.FINISHED
+            ).order_by('-id')
+            context_dict = {
+                'cat_num_pages': len(as_cat)//ELEMENTS_PER_PAGE,
+                'mouse_num_pages': len(as_mouse)//ELEMENTS_PER_PAGE,
+                'game_type': 'replay'
+            }
         else:
             return errorHTTP(
                 request,
@@ -223,13 +272,12 @@ def get_new_page_service(request):
 
     try:
         page_num = int(page_num)
-    except:
+    except ValueError:
         return errorHTTP(
             request,
             exception='Page number invalid.',
             status=404
         )
-
 
     cat_or_mouse = request.POST.get('cat_or_mouse')
     if cat_or_mouse is None:
@@ -242,9 +290,17 @@ def get_new_page_service(request):
 
     if game_type == 'current':
         if is_cat:
-            data = Game.objects.filter(cat_user=request.user).filter(status=GameStatus.ACTIVE).order_by('-id')
+            data = Game.objects.filter(
+                cat_user=request.user
+            ).filter(
+                status=GameStatus.ACTIVE
+            ).order_by('-id')
         else:
-            data = Game.objects.filter(mouse_user=request.user).filter(status=GameStatus.ACTIVE).order_by('-id')
+            data = Game.objects.filter(
+                mouse_user=request.user
+            ).filter(
+                status=GameStatus.ACTIVE
+            ).order_by('-id')
         page = Paginator(data, ELEMENTS_PER_PAGE)
         if page.num_pages < page_num:
             return errorHTTP(
@@ -252,9 +308,13 @@ def get_new_page_service(request):
                 exception='Page not in range.',
                 status=404
             )
-        context_dict = { 'page': page.page(page_num), 'game_type': 'current' }
+        context_dict = {'page': page.page(page_num), 'game_type': 'current'}
     elif game_type == 'open':
-        data = Game.objects.filter(status=GameStatus.CREATED).filter(~Q(cat_user=request.user)).order_by('-id')
+        data = Game.objects.filter(
+            status=GameStatus.CREATED
+        ).filter(
+            ~Q(cat_user=request.user)
+        ).order_by('-id')
         page = Paginator(data, ELEMENTS_PER_PAGE)
         if page.num_pages < page_num:
             return errorHTTP(
@@ -262,12 +322,20 @@ def get_new_page_service(request):
                 exception='Page not in range.',
                 status=404
             )
-        context_dict = { 'page': page.page(page_num), 'game_type': 'open' }
+        context_dict = {'page': page.page(page_num), 'game_type': 'open'}
     elif game_type == 'replay':
         if is_cat:
-            data = Game.objects.filter(cat_user=request.user).filter(status=GameStatus.FINISHED).order_by('-id')
+            data = Game.objects.filter(
+                cat_user=request.user
+            ).filter(
+                status=GameStatus.FINISHED
+            ).order_by('-id')
         else:
-            data = Game.objects.filter(mouse_user=request.user).filter(status=GameStatus.FINISHED).order_by('-id')
+            data = Game.objects.filter(
+                mouse_user=request.user
+            ).filter(
+                status=GameStatus.FINISHED
+            ).order_by('-id')
         page = Paginator(data, ELEMENTS_PER_PAGE)
         if page.num_pages < page_num:
             return errorHTTP(
@@ -275,7 +343,7 @@ def get_new_page_service(request):
                 exception='Page not in range.',
                 status=404
             )
-        context_dict = { 'page': page.page(page_num), 'game_type': 'replay' }
+        context_dict = {'page': page.page(page_num), 'game_type': 'replay'}
     else:
         return errorHTTP(
             request,
@@ -328,9 +396,10 @@ def show_game_service(request):
     board[game.cat3] = 1
     board[game.cat4] = 1
     board[game.mouse] = -1
-    
+
     context_dict = {'game': game, 'board': board}
     return render(request, 'mouse_cat/game.html', context_dict)
+
 
 # Autor: Víctor Yrazusta Ibarra
 @login_required
@@ -393,12 +462,18 @@ def show_replay_service(request):
     board[game.cat4] = 1
     board[game.mouse] = -1
 
-    context_dict = {'game': game, 'board': board, 'has_next': has_next, 'has_previous': has_previous}
+    context_dict = {
+        'game': game,
+        'board': board,
+        'has_next': has_next,
+        'has_previous': has_previous
+    }
     return render(request, 'mouse_cat/replay.html', context_dict)
+
 
 @login_required
 @require_http_methods(['POST'])
-def get_update(request):    
+def get_update(request):
     if 'game_selected' not in request.session:
         return errorHTTP(
             request,
@@ -434,7 +509,7 @@ def get_update(request):
 
     if datetime.now(timezone.utc) > last_move.date:
         return get_board(request)
-    
+
     ret = 0
     return JsonResponse(ret, safe=False)
 
@@ -476,6 +551,7 @@ def get_board(request):
     board[game.mouse] = -1
 
     return JsonResponse(board, safe=False)
+
 
 # Autor: Alejandro Pascual Pozo
 @login_required
@@ -521,7 +597,7 @@ def move_service(request):
     try:
         move = Move(origin=origin, target=target, game=game, player=player)
         move.save()
-    except:
+    except Exception:
         pass
 
     return redirect(reverse('show_game'))
@@ -533,44 +609,53 @@ def get_move_service(request):
     shift = int(request.POST.get('shift', '0'))
 
     if shift != -1 and shift != 1:
-        data = { 'valid': False }
+        data = {'valid': False}
         return JsonResponse(data, safe=False)
 
     if 'game_selected' not in request.session:
-        data = { 'valid': False }
+        data = {'valid': False}
         return JsonResponse(data, safe=False)
 
     game_id = request.session['game_selected']
     games = Game.objects.filter(id=game_id)
 
     if len(games) == 0:
-        data = { 'valid': False }
+        data = {'valid': False}
         return JsonResponse(data, safe=False)
 
     game = games[0]
 
     if game.status != GameStatus.FINISHED:
-        data = { 'valid': False }
+        data = {'valid': False}
         return JsonResponse(data, safe=False)
 
     current_move = request.session.get('current_move', 0)
     moves = Move.objects.filter(game=game_id).order_by('date')
 
-    if (shift == -1 and current_move <= 0) or (shift == 1 and current_move >= len(moves)):
-        data = { 'valid': False }
+    if (
+        (shift == -1 and current_move <= 0) or
+        (shift == 1 and current_move >= len(moves))
+    ):
+        data = {'valid': False}
         return JsonResponse(data, safe=False)
 
-    current_move += int(shift);
-    request.session['current_move'] = current_move;
+    current_move += int(shift)
+    request.session['current_move'] = current_move
 
     previous_exists = (current_move > 0)
     next_exists = (current_move < len(moves))
     if shift == 1:
         origin = moves[current_move - 1].origin
         target = moves[current_move - 1].target
-    else:        
+    else:
         origin = moves[current_move].target
         target = moves[current_move].origin
 
-    data = { 'origin': origin, 'target': target, 'previous': previous_exists, 'next': next_exists, 'valid': True }
+    data = {
+        'origin': origin,
+        'target': target,
+        'previous': previous_exists,
+        'next': next_exists,
+        'valid': True
+    }
     return JsonResponse(data, safe=False)
