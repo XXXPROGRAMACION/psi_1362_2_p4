@@ -46,7 +46,8 @@ class GameStatus(IntEnum):
     FINISHED = 2
 
     # Autor: Alejandro Pascual Pozo
-    def to_string(self, game_status):
+    @staticmethod
+    def to_string(game_status):
         if game_status == GameStatus.CREATED:
             return 'Created'
         elif game_status == GameStatus.ACTIVE:
