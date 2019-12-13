@@ -9,23 +9,26 @@
         <p>
             Cats: <b>{{ game.cat_user.username }}</b>
             {% if game.cat_user.id == request.user.id %}
-                <blockquote class="cat">
-                    {% if not game.cat_turn %}
-                        Waiting for the mouse...
-                        <a style="margin-left:20px;font-weight:normal" href="{% url 'show_game' %}">Refresh</a>
-                    {% endif %}
-                </blockquote>
             {% endif %}
         </p>
         <p>
             Mouse: <b>{{ game.mouse_user.username }}</b>
             {% if game.mouse_user.id == request.user.id %}
-                <blockquote class="mouse">
-                    {% if game.cat_turn %}
-                        Waiting for the cat...
-                        <a style="margin-left:20px;font-weight:normal" href="{% url 'show_game' %}">Refresh</a>
-                    {% endif %}
-                </blockquote>
+            {% endif %}
+        </p>
+        <p class="turn_indicator">
+            {% if game.cat_turn %}
+                {% if game.cat_user.id == request.user.id %}
+                    Your turn!
+                {% else %}
+                    {{ game.cat_user.username }}'s turn
+                {% endif %}
+            {% else %}
+                {% if game.mouse_user.id == request.user.id %}
+                    Your turn!
+                {% else %}
+                    {{ game.mouse_user.username }}'s turn
+                {% endif %}
             {% endif %}
         </p>
     </form>
@@ -132,6 +135,20 @@
                                 alert("Sadly you've lost the game :(");
                             }
                         }
+
+                        if (cat_turn) {
+                            {% if game.cat_user.id == request.user.id %}
+                                $(".turn_indicator").text("Your turn!");
+                            {% else %}
+                                $(".turn_indicator").text("{{ game.cat_user.username }}'s turn");
+                            {% endif %}
+                        } else {
+                            {% if game.mouse_user.id == request.user.id %}
+                                $(".turn_indicator").text("Your turn!");
+                            {% else %}
+                                $(".turn_indicator").text("{{ game.cat_user.username }}'s turn");
+                            {% endif %}
+                        }
                     }
                 };
                 xhttp.open("POST", "{% url 'move' %}", true);
@@ -158,15 +175,24 @@
                     if (cell_id >= 56) {
                         return;
                     } else if (cell_id%8 == 0) {
-                        $("#cell_"+(cell_id+9)).css("background", "red");
-                        cell_target_list.push(cell_id+9);
+                        if (mouse != cell_id+9 && !cats.includes(cell_id+9)) {
+                            $("#cell_"+(cell_id+9)).css("background", "red");
+                            cell_target_list.push(cell_id+9);
+                        }
                     } else if ((cell_id+1)%8 == 0) {
-                        $("#cell_"+(cell_id+7)).css("background", "red");
-                        cell_target_list.push(cell_id+7);
+                        if (mouse != cell_id+7 && !cats.includes(cell_id+7)) {
+                            $("#cell_"+(cell_id+7)).css("background", "red");
+                            cell_target_list.push(cell_id+7);
+                        }
                     } else {
-                        $("#cell_"+(cell_id+7)+", #cell_"+(cell_id+9)).css("background", "red");
-                        cell_target_list.push(cell_id+7);
-                        cell_target_list.push(cell_id+9);
+                        if (mouse != cell_id+9 && !cats.includes(cell_id+9)) {
+                            $("#cell_"+(cell_id+9)).css("background", "red");
+                            cell_target_list.push(cell_id+9);
+                        }
+                        if (mouse != cell_id+7 && !cats.includes(cell_id+7)) {
+                            $("#cell_"+(cell_id+7)).css("background", "red");
+                            cell_target_list.push(cell_id+7);
+                        }
                     }
                 } else if ($("#cell_" + cell_id).text().includes("🐭")) {
                     if (user_is_cat) {
@@ -186,27 +212,45 @@
 
                     if (cell_id < 8) {
                     } else if (cell_id%8 == 0) {
-                        $("#cell_"+(cell_id-7)).css("background", "red");
-                        cell_target_list.push(cell_id-7);
+                        if (!cats.includes(cell_id-7)) {
+                            $("#cell_"+(cell_id-7)).css("background", "red");
+                            cell_target_list.push(cell_id-7);
+                        }
                     } else if ((cell_id+1)%8 == 0) {
-                        $("#cell_"+(cell_id-9)).css("background", "red");
-                        cell_target_list.push(cell_id-9);
+                        if (!cats.includes(cell_id-9)) {
+                            $("#cell_"+(cell_id-9)).css("background", "red");
+                            cell_target_list.push(cell_id-9);
+                        }
                     } else {
-                        $("#cell_"+(cell_id-7)+", #cell_"+(cell_id-9)).css("background", "red");
-                        cell_target_list.push(cell_id-7);
-                        cell_target_list.push(cell_id-9);
+                        if (!cats.includes(cell_id-7)) {
+                            $("#cell_"+(cell_id-7)).css("background", "red");
+                            cell_target_list.push(cell_id-7);
+                        }
+                        if (!cats.includes(cell_id-9)) {
+                            $("#cell_"+(cell_id-9)).css("background", "red");
+                            cell_target_list.push(cell_id-9);
+                        }
                     }
                     if (cell_id >= 56) {
                     } else if (cell_id%8 == 0) {
-                        $("#cell_"+(cell_id+9)).css("background", "red");
-                        cell_target_list.push(cell_id+9);
+                        if (!cats.includes(cell_id+9)) {
+                            $("#cell_"+(cell_id+9)).css("background", "red");
+                            cell_target_list.push(cell_id+9);
+                        }
                     } else if ((cell_id+1)%8 == 0) {
-                        $("#cell_"+(cell_id+7)).css("background", "red");
-                        cell_target_list.push(cell_id+7);
+                        if (!cats.includes(cell_id+7)) {
+                            $("#cell_"+(cell_id+7)).css("background", "red");
+                            cell_target_list.push(cell_id+7);
+                        }
                     } else {
-                        $("#cell_"+(cell_id+7)+", #cell_"+(cell_id+9)).css("background", "red");
-                        cell_target_list.push(cell_id+7);
-                        cell_target_list.push(cell_id+9);
+                        if (!cats.includes(cell_id+9)) {
+                            $("#cell_"+(cell_id+9)).css("background", "red");
+                            cell_target_list.push(cell_id+9);
+                        }
+                        if (!cats.includes(cell_id+7)) {
+                            $("#cell_"+(cell_id+7)).css("background", "red");
+                            cell_target_list.push(cell_id+7);
+                        }
                     }
 
                 } else {
@@ -253,6 +297,20 @@
                             update_board(board);
                             //alert("Now is your turn!");
                             cat_turn = !cat_turn;
+                        }
+
+                        if (cat_turn) {
+                            {% if game.cat_user.id == request.user.id %}
+                                $(".turn_indicator").text("Your turn!");
+                            {% else %}
+                                $(".turn_indicator").text("{{ game.cat_user.username }}'s turn");
+                            {% endif %}
+                        } else {
+                            {% if game.mouse_user.id == request.user.id %}
+                                $(".turn_indicator").text("Your turn!");
+                            {% else %}
+                                $(".turn_indicator").text("{{ game.cat_user.username }}'s turn");
+                            {% endif %}
                         }
                     }
                 };
