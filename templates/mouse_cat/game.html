@@ -186,7 +186,7 @@
                         return;
                     }
                     for (cell in cell_target_list) {
-                        $("#cell_" + cell_target_list[cell]).css("background", "");
+                        $("#cell_" + cell_target_list[cell]).removeClass("valid-move");
                     }
                     cell_target_list = [];
                     cell_origin = cell_id;
@@ -196,21 +196,21 @@
                         return;
                     } else if (cell_id%8 == 0) {
                         if (mouse != cell_id+9 && !cats.includes(cell_id+9)) {
-                            $("#cell_"+(cell_id+9)).css("background", "red");
+                            $("#cell_"+(cell_id+9)).addClass("valid-move");
                             cell_target_list.push(cell_id+9);
                         }
                     } else if ((cell_id+1)%8 == 0) {
                         if (mouse != cell_id+7 && !cats.includes(cell_id+7)) {
-                            $("#cell_"+(cell_id+7)).css("background", "red");
+                            $("#cell_"+(cell_id+7)).addClass("valid-move");
                             cell_target_list.push(cell_id+7);
                         }
                     } else {
                         if (mouse != cell_id+9 && !cats.includes(cell_id+9)) {
-                            $("#cell_"+(cell_id+9)).css("background", "red");
+                            $("#cell_"+(cell_id+9)).addClass("valid-move");
                             cell_target_list.push(cell_id+9);
                         }
                         if (mouse != cell_id+7 && !cats.includes(cell_id+7)) {
-                            $("#cell_"+(cell_id+7)).css("background", "red");
+                            $("#cell_"+(cell_id+7)).addClass("valid-move");
                             cell_target_list.push(cell_id+7);
                         }
                     }
@@ -224,7 +224,7 @@
                         return;
                     }                        
                     for (cell in cell_target_list) {
-                        $("#cell_" + cell_target_list[cell]).css("background", "");
+                        $("#cell_" + cell_target_list[cell]).removeClass("valid-move");
                     }
                     cell_target_list = [];
                     cell_origin = cell_id;
@@ -233,42 +233,42 @@
                     if (cell_id < 8) {
                     } else if (cell_id%8 == 0) {
                         if (!cats.includes(cell_id-7)) {
-                            $("#cell_"+(cell_id-7)).css("background", "red");
+                            $("#cell_"+(cell_id-7)).addClass("valid-move");
                             cell_target_list.push(cell_id-7);
                         }
                     } else if ((cell_id+1)%8 == 0) {
                         if (!cats.includes(cell_id-9)) {
-                            $("#cell_"+(cell_id-9)).css("background", "red");
+                            $("#cell_"+(cell_id-9)).addClass("valid-move");
                             cell_target_list.push(cell_id-9);
                         }
                     } else {
                         if (!cats.includes(cell_id-7)) {
-                            $("#cell_"+(cell_id-7)).css("background", "red");
+                            $("#cell_"+(cell_id-7)).addClass("valid-move");
                             cell_target_list.push(cell_id-7);
                         }
                         if (!cats.includes(cell_id-9)) {
-                            $("#cell_"+(cell_id-9)).css("background", "red");
+                            $("#cell_"+(cell_id-9)).addClass("valid-move");
                             cell_target_list.push(cell_id-9);
                         }
                     }
                     if (cell_id >= 56) {
                     } else if (cell_id%8 == 0) {
                         if (!cats.includes(cell_id+9)) {
-                            $("#cell_"+(cell_id+9)).css("background", "red");
+                            $("#cell_"+(cell_id+9)).addClass("valid-move");
                             cell_target_list.push(cell_id+9);
                         }
                     } else if ((cell_id+1)%8 == 0) {
                         if (!cats.includes(cell_id+7)) {
-                            $("#cell_"+(cell_id+7)).css("background", "red");
+                            $("#cell_"+(cell_id+7)).addClass("valid-move");
                             cell_target_list.push(cell_id+7);
                         }
                     } else {
                         if (!cats.includes(cell_id+9)) {
-                            $("#cell_"+(cell_id+9)).css("background", "red");
+                            $("#cell_"+(cell_id+9)).addClass("valid-move");
                             cell_target_list.push(cell_id+9);
                         }
                         if (!cats.includes(cell_id+7)) {
-                            $("#cell_"+(cell_id+7)).css("background", "red");
+                            $("#cell_"+(cell_id+7)).addClass("valid-move");
                             cell_target_list.push(cell_id+7);
                         }
                     }
@@ -282,7 +282,7 @@
                         $(".status").text("Not your turn.");
                     }
                     for (cell in cell_target_list) {
-                        $("#cell_" + cell_target_list[cell]).css("background", "");
+                        $("#cell_" + cell_target_list[cell]).removeClass("valid-move");
                     }
                     cell_target_list = []
                 }

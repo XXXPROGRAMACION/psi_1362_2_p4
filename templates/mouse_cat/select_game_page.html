@@ -1,3 +1,12 @@
 {% for game in page %}
-    <li> <a href="{% url 'select_game' game_type game.id %}">{{ game }}</a></li>
+    <li> <a href="{% url 'select_game' game_type game.id %}">
+        Game {{ game.id }}
+        vs {% if game.cat_user == request.user %} {{ game.mouse_user }} {% else %} {{ game.cat_user }} {% endif %}
+        {% if game.cat_user == request.user and game.cat_turn %}
+            (Your turn)
+        {% endif %}
+        {% if game.mouse_user == request.user and not game.cat_turn %}
+            (Your turn)
+        {% endif %}
+    </a></li>
 {% endfor %}

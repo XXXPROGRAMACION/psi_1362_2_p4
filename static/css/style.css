@@ -144,6 +144,10 @@ ul {
   display: none;
 }
 
+.valid-move {
+  border: solid 5px #7d3ddb;
+}
+
 #body #totalheader {
   padding: 20px 40px;
 }
@@ -170,7 +174,7 @@ ul {
   35% { opacity: 0; }
 }
 
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 800px) {
   * {
     letter-spacing: 0.25rem;
     line-height: 1.8rem;

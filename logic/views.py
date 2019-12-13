@@ -10,6 +10,7 @@ from django.db.models import Q
 from django.views.decorators.http import require_http_methods
 from datetime import datetime, timezone
 from django.core.paginator import Paginator
+import math
 
 ELEMENTS_PER_PAGE = 3
 
@@ -210,8 +211,8 @@ def select_game_service(request, game_type=None, game_id=None):
                 status=GameStatus.ACTIVE
             ).order_by('-id')
             context_dict = {
-                'cat_num_pages': len(as_cat)//ELEMENTS_PER_PAGE,
-                'mouse_num_pages': len(as_mouse)//ELEMENTS_PER_PAGE,
+                'cat_num_pages': math.ceil(len(as_cat)/ELEMENTS_PER_PAGE),
+                'mouse_num_pages': math.ceil(len(as_mouse)/ELEMENTS_PER_PAGE),
                 'game_type': 'current'
             }
         elif game_type == 'open':
@@ -222,7 +223,7 @@ def select_game_service(request, game_type=None, game_id=None):
             ).order_by('-id')
             context_dict = {
                 'cat_num_pages': 0,
-                'mouse_num_pages': len(as_mouse)//ELEMENTS_PER_PAGE,
+                'mouse_num_pages': math.ceil(len(as_mouse)/ELEMENTS_PER_PAGE),
                 'game_type': 'open'
             }
         elif game_type == 'replay':
@@ -237,8 +238,8 @@ def select_game_service(request, game_type=None, game_id=None):
                 status=GameStatus.FINISHED
             ).order_by('-id')
             context_dict = {
-                'cat_num_pages': len(as_cat)//ELEMENTS_PER_PAGE,
-                'mouse_num_pages': len(as_mouse)//ELEMENTS_PER_PAGE,
+                'cat_num_pages': math.ceil(len(as_cat)/ELEMENTS_PER_PAGE),
+                'mouse_num_pages': math.ceil(len(as_mouse)/ELEMENTS_PER_PAGE),
                 'game_type': 'replay'
             }
         else:
