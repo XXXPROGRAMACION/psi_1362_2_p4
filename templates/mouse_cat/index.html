@@ -5,9 +5,6 @@
 {% block content %}
 <div id="content">
     <h1>Service catalog</h1>
-
-    
-
     <ul>
         {% if request.user.is_authenticated %}
         <li class="menu-option" onclick="location.href = '{% url 'select_game' 'current'  %}';">
@@ -24,7 +21,7 @@
         </li>
         <li class="menu-option" onclick="location.href = '{% url 'select_game' 'replay' %}';">
             <span class="arrow">➤</span>
-            <span class="text">Watch a replay</span>
+            <span class="text">Watch replay</span>
         </li>
         {% else %}
         <li class="menu-option" onclick="location.href = '{% url 'login' %}';">

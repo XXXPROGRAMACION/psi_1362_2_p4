@@ -1,4 +1,5 @@
 {% extends "mouse_cat/base.html" %}
+{% load staticfiles %}
 
 {% block content %}
 <div id="content">
@@ -72,16 +73,23 @@
             }
 
             function apply_move(origin, target) {                
-                var symbol = $("#cell_" + origin).text();
-                $("#cell_" + origin).empty();
-                $("#cell_" + target).text(symbol);
+                var symbol = $("#cell_" + origin + " p").text();
+                $("#cell_" + origin + " p").text("");
+                $("#cell_" + target + " p").text(symbol);
+                if (symbol.includes("mouse")) {
+                    $("#mouse_" + origin).addClass("hidden");
+                    $("#mouse_" + target).removeClass("hidden");
+                } else if (symbol.includes("cat")) {
+                    $("#cat_" + origin).addClass("hidden");
+                    $("#cat_" + target).removeClass("hidden");
+                }
             }
 
             function update_buttons() {
                 if (has_next) {
                     $("#replay-next").removeClass("disabled");
                     $("#replay-run").removeClass("disabled");
-                    $(".status").empty();
+                    $(".status").text("");
                 } else {
                     $("#replay-next").addClass("disabled");
                     $("#replay-run").addClass("disabled");
@@ -106,13 +114,15 @@
         <a id="replay-run" onclick="run_replay()" {% if not has_next %}class="disabled"{% endif %}>Run</a>
         <a id="replay-stop" onclick="stop_replay()" class="hidden">Stop</a>
         <div id="chess_board">
-        {% for item in board %}
-            {% if forloop.counter0|divisibleby:8 %}<div class="row">{% endif %}
-            <div class="cell {% if forloop.counter0|divisibleby:8 %}{% cycle 'black' 'white' %}{% else %}{% cycle 'white' 'black' %}{% endif %}" id="cell_{{ forloop.counter0 }}">
-                <p>{% if item ==  -1 %}🐭{% elif item == 1 %}🐱{% endif %}</p>
-            </div>
-            {% if forloop.counter|divisibleby:8 or forloop.last %}</div>{% endif %}
-        {% endfor %}
+            {% for item in board %}
+                {% if forloop.counter0|divisibleby:8 %}<div class="row">{% endif %}
+                    <div class="cell {% if forloop.counter0|divisibleby:8 %}{% cycle 'black' 'white' %}{% else %}{% cycle 'white' 'black' %}{% endif %}" id="cell_{{ forloop.counter0 }}">
+                        <p>{% if item == -1 %}mouse{% elif item == 1 %}cat{% endif %}</p>
+                        <img src="{% static 'images/mouse.png' %}" alt="Picture a mouse" class="{% if not item == -1 %}hidden{% endif %}" id="mouse_{{ forloop.counter0 }}"/>
+                        <img src="{% static 'images/cat.png' %}" alt="Picture a cat" class="{% if not item == 1 %}hidden{% endif %}" id="cat_{{ forloop.counter0 }}"/>
+                    </div>
+                {% if forloop.counter|divisibleby:8 or forloop.last %}</div>{% endif %}
+            {% endfor %}
         </div>
 
         <p class="status">

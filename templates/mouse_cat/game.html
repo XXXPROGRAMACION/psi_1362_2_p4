@@ -1,4 +1,5 @@
 {% extends "mouse_cat/base.html" %}
+{% load staticfiles %}
 
 {% block content %}
 <div id="content">
@@ -62,13 +63,19 @@
                 cats = []
                 for (let i = 0; i < 64; i++) {
                     if (board[i] == -1) {
-                        $("#cell_" + i).text("🐭");
+                        $("#cell_" + i + " p").text("mouse");
+                        $("#mouse_" + i).removeClass("hidden");
+                        $("#cat_" + i).addClass("hidden");
                         mouse = i;
                     } else if (board[i] == 1) {
-                        $("#cell_" + i).text("🐱");
+                        $("#cell_" + i + " p").text("cat");
+                        $("#cat_" + i).removeClass("hidden");
+                        $("#mouse_" + i).addClass("hidden");
                         cats.push(i);
                     } else {
-                        $("#cell_" + i).empty();
+                        $("#cell_" + i + " p").text("");
+                        $("#mouse_" + i).addClass("hidden");
+                        $("#cat_" + i).addClass("hidden");
                     }
                 }
 
@@ -103,18 +110,22 @@
                 var xhttp = new XMLHttpRequest();
                 xhttp.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
-                        $("#cell_" + origin).empty();
                         board[origin] = 0
                         if (is_mouse) {
-                            $("#cell_" + target).append("🐭");
+                            $("#cell_" + target + " p").text("mouse");
+                            $("#mouse_" + origin).addClass("hidden");
+                            $("#mouse_" + target).removeClass("hidden");
                             board[target] = -1;
                             mouse = target
                         } else {
-                            $("#cell_" + target).append("🐱");
+                            $("#cell_" + target + " p").text("cat");
+                            $("#cat_" + origin).addClass("hidden");
+                            $("#cat_" + target).removeClass("hidden");
                             board[target] = 1;
                             cats.splice(cats.indexOf(origin), 1);
                             cats.push(target);
                         }
+
                         cat_turn = !cat_turn;
                         if (mouse_is_trapped(cats[0], cats[1], cats[2], cats[3], mouse)) {
                             game_finished = true;
@@ -165,7 +176,7 @@
 
             function cell_on_click(cell_id) {
                 if (game_finished) return;
-                if ($("#cell_" + cell_id).text().includes("🐱")) {
+                if ($("#cell_" + cell_id + " p").text().includes("cat")) {
                     if (!user_is_cat) {
                         $(".status").text("You are not the cat player.");
                         return;
@@ -203,7 +214,7 @@
                             cell_target_list.push(cell_id+7);
                         }
                     }
-                } else if ($("#cell_" + cell_id).text().includes("🐭")) {
+                } else if ($("#cell_" + cell_id  + " p").text().includes("mouse")) {
                     if (user_is_cat) {
                         $(".status").text("You are not the mouse player.");
                         return;
@@ -335,14 +346,16 @@
             interval = setInterval(get_and_print_board, 500);
         </script>
         <div id="chess_board">
-        {% for item in board %}
-            {% if forloop.counter0|divisibleby:8 %}<div class="row">{% endif %}
-            <div class="cell {% if forloop.counter0|divisibleby:8 %}{% cycle 'black' 'white' %}{% else %}{% cycle 'white' 'black' %}{% endif %}" 
-                onclick="cell_on_click({{ forloop.counter0 }})" id="cell_{{ forloop.counter0 }}">
-                <p>{% if item ==  -1 %}🐭{% elif item == 1 %}🐱{% endif %}</p>
-            </div>
-            {% if forloop.counter|divisibleby:8 or forloop.last %}</div>{% endif %}
-        {% endfor %}
+            {% for item in board %}
+                {% if forloop.counter0|divisibleby:8 %}<div class="row">{% endif %}
+                    <div class="cell {% if forloop.counter0|divisibleby:8 %}{% cycle 'black' 'white' %}{% else %}{% cycle 'white' 'black' %}{% endif %}" 
+                        onclick="cell_on_click({{ forloop.counter0 }})" id="cell_{{ forloop.counter0 }}">
+                        <p>{% if item ==  -1 %}mouse{% elif item == 1 %}cat{% endif %}</p>
+                        <img src="{% static 'images/mouse.png' %}" alt="Picture a mouse" class="{% if not item == -1 %}hidden{% endif %}" id="mouse_{{ forloop.counter0 }}"/>
+                        <img src="{% static 'images/cat.png' %}" alt="Picture a cat" class="{% if not item == 1 %}hidden{% endif %}" id="cat_{{ forloop.counter0 }}"/>
+                    </div>
+                {% if forloop.counter|divisibleby:8 or forloop.last %}</div>{% endif %}
+            {% endfor %}
         </div>
 
     <p class="status">

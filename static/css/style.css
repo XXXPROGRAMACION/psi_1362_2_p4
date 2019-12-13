@@ -68,6 +68,20 @@ ul {
   cursor: pointer;
 }
 
+.cell p {
+  display: none;
+}
+
+.cell img {
+  image-rendering: crisp-edges;
+  position: absolute;
+  width: 60%;
+  height: 60%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .cell.white {
   background-color: #82e1e2;
   box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.05) inset, 0px 0px 8px rgba(48, 155, 238, 0.6);

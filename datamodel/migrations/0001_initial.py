@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('cat2', models.IntegerField(default=2)),
                 ('cat3', models.IntegerField(default=4)),
                 ('cat4', models.IntegerField(default=6)),
-                ('mouse', models.IntegerField(default=59)),
+                ("mouse", models.IntegerField(default=59)),
                 ('cat_turn', models.BooleanField(default=True)),
                 ('status', models.IntegerField(default=datamodel.models.GameStatus(0))),
                 ('cat_user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='games_as_cat', to=settings.AUTH_USER_MODEL)),
