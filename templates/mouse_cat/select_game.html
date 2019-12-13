@@ -4,6 +4,53 @@
 <script>
     cat_page = 1;
     mouse_page = 1;
+    prev_cat_button = 1;
+    prev_mouse_button = 1;
+    cat_num_pages = {{ cat_num_pages }};
+    mouse_num_pages = {{ mouse_num_pages }};
+
+    function print_new_cat_page(cat_page_num) {
+        $("#cat_"+prev_cat_button).css("background-color", "");
+        $("#cat_"+cat_page_num).css("background-color", "#2e8687");
+        prev_cat_button = cat_page_num;
+        var data = new FormData();
+        data.append('game_type', '{{ game_type }}');
+        data.append('page_num', cat_page_num);
+        data.append('cat_or_mouse', 'cat');
+        data.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                $("#cat_list").html(this.response);
+            }
+        };
+        xhttp.open("POST", "{% url 'get_new_page' %}", true);
+        xhttp.send(data);
+    }
+
+    function print_new_mouse_page(mouse_page_num) {
+        $("#mouse_"+prev_mouse_button).css("background-color", "");
+        $("#mouse_"+mouse_page_num).css("background-color", "#2e8687");
+        prev_mouse_button = mouse_page_num;
+        var data = new FormData();
+        data.append('game_type', '{{ game_type }}');
+        data.append('page_num', mouse_page_num);
+        data.append('cat_or_mouse', 'mouse');
+        data.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                $("#mouse_list").html(this.response);
+            }
+        };
+        xhttp.open("POST", "{% url 'get_new_page' %}", true);
+        xhttp.send(data);
+    }
+
+    window.onload = function() {
+        if (cat_num_pages > 0) print_new_cat_page(1);
+        if (mouse_num_pages > 0) print_new_mouse_page(1);
+    };
 </script>
 <div id="content">
     {% if game_type %}
@@ -17,27 +64,27 @@
             <h1>Select a replay to watch</h1>
         {% endifequal %}
         <p>
-            {% if as_cat %}
+            {% if cat_num_pages != 0 %}
                 Games as cat:
-                <ul>
-                {% for game in as_cat %}
-                    <li> <a href="{% url 'select_game' game_type game.id %}">{{ game }}</a></li>
+                <ul id="cat_list"></ul>
+                {% with ''|center:cat_num_pages as range %}
+                {% for _ in range %}
+                    <button id="cat_{{ forloop.counter }}" onclick="print_new_cat_page({{ forloop.counter }})">{{ forloop.counter }}</button>
                 {% endfor %}
-                </ul>
-                <button> Button </button>
+                {% endwith %}
             {% else %}
                 No games as cat
             {% endif %}
         </p>
         <p>
-            {% if as_mouse %}
+            {% if mouse_num_pages != 0 %}
                 Games as mouse:
-                <ul>
-                {% for game in as_mouse %}
-                    <li> <a href="{% url 'select_game' game_type game.id %}">{{ game }}</a></li>
+                <ul id="mouse_list"></ul>
+                {% with ''|center:mouse_num_pages as range %}
+                {% for _ in range %}
+                    <button id="mouse_{{ forloop.counter }}" onclick="print_new_mouse_page({{ forloop.counter }})">{{ forloop.counter }}</button>
                 {% endfor %}
-                </ul>
-                <button> Button </button>
+                {% endwith %}
             {% else %}
                 No games as mouse
             {% endif %}
