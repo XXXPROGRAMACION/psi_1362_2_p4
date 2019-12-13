@@ -50,7 +50,8 @@
                 if ((shift == 1 && !has_next) || (shift == -1 && !has_previous)) return;
 
                 var data = new FormData();
-                data.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                data.append("shift", shift);
+                data.append("csrfmiddlewaretoken", "{{ csrf_token }}");
                 var xhttp = new XMLHttpRequest();
                 xhttp.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
@@ -65,13 +66,9 @@
                         }
                     }
                 };
-                if (shift == 1) {
-                    xhttp.open("POST", "{% url 'get_move' '+1' %}", true);
-                    xhttp.send(data);
-                } else if (shift == -1) {
-                    xhttp.open("POST", "{% url 'get_move' '-1' %}", true);
-                    xhttp.send(data);
-                }
+
+                xhttp.open("POST", "{% url 'get_move' %}", true);
+                xhttp.send(data);
             }
 
             function apply_move(origin, target) {                

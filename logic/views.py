@@ -452,8 +452,10 @@ def move_service(request):
 
 @login_required
 @require_http_methods(['POST'])
-def get_move_service(request, shift):
-    if shift != '-1' and shift != '+1':
+def get_move_service(request):
+    shift = int(request.POST.get('shift', '0'))
+
+    if shift != -1 and shift != 1:
         data = { 'valid': False }
         return JsonResponse(data, safe=False)
 
@@ -474,10 +476,10 @@ def get_move_service(request, shift):
         data = { 'valid': False }
         return JsonResponse(data, safe=False)
 
-    current_move = request.session['current_move']
+    current_move = request.session.get('current_move', 0)
     moves = Move.objects.filter(game=game_id).order_by('date')
 
-    if (shift == '-1' and current_move <= 0) or (shift == '+1' and current_move >= len(moves)):
+    if (shift == -1 and current_move <= 0) or (shift == 1 and current_move >= len(moves)):
         data = { 'valid': False }
         return JsonResponse(data, safe=False)
 
@@ -486,7 +488,7 @@ def get_move_service(request, shift):
 
     previous_exists = (current_move > 0)
     next_exists = (current_move < len(moves))
-    if shift == '+1':
+    if shift == 1:
         origin = moves[current_move - 1].origin
         target = moves[current_move - 1].target
     else:        
