@@ -358,17 +358,17 @@
             {% endfor %}
         </div>
 
-    <p class="status">
-        {% if game.cat_user.id == request.user.id and game.cat_turn or game.cat_user.id != request.user.id and not game.cat_turn %}
-            Your turn!
-        {% else %}
-            {% if game.cat_user.id == request.user.id %}
-                Waiting for {{ game.mouse_user.username }}...
+        <p class="status">
+            {% if game.cat_user.id == request.user.id and game.cat_turn or game.cat_user.id != request.user.id and not game.cat_turn %}
+                Your turn!
             {% else %}
-                Waiting for {{ game.cat_user.username }}...
+                {% if game.cat_user.id == request.user.id %}
+                    Waiting for {{ game.mouse_user.username }}...
+                {% else %}
+                    Waiting for {{ game.cat_user.username }}...
+                {% endif %}
             {% endif %}
-        {% endif %}
-    </p>
+        </p>
     {% endif %}
 
     <p><a href="{% url 'landing' %}">Return to homepage</a></p>

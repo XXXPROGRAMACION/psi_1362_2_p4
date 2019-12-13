@@ -14,6 +14,7 @@
 body {
   margin: 0;
   padding: 0;
+  font-size: 18px;
   background: repeating-linear-gradient(
     to bottom,
     #0f0a1e,
@@ -24,6 +25,7 @@ body {
 }
 
 h1 {
+  font-size: 150%;
   margin: 0;
 }
 
@@ -32,6 +34,7 @@ span {
 }
 
 a {
+  size: 100%;
   text-decoration: none;
   cursor: pointer;
   user-select: none;
@@ -39,6 +42,10 @@ a {
 
 a:hover {
   animation: blink 1s step-start infinite;
+}
+
+p {
+  size: 100%;
 }
 
 input {
@@ -57,21 +64,31 @@ ul {
   list-style-type: none;
 }
 
-.chess-board {
+#chess_board {
   display: table;
+  width: 100%;
+  max-width: 400px;
+}
+
+.row {
+  width: 100%;
 }
 
 .cell {
   position: relative;
-  width: 60px;
-  height: 60px;
+  width: 12.5%;
   float: left;
-  display: table-cell;
   border-radius: 3px;
   text-shadow: none;
   text-align: center;
   vertical-align: middle;
   cursor: pointer;
+}
+
+.cell:after {
+  display: block;
+  content: "";
+  padding-top: 100%;
 }
 
 .cell p {
@@ -97,10 +114,6 @@ ul {
 .cell.black {
   background-color: rgb(8, 8, 8);
   z-index: 1;
-}
-
-.row {
-  display: table-row;
 }
 
 .menu-option {
@@ -139,6 +152,53 @@ ul {
   padding: 20px 40px;
 }
 
+#mobile-header {
+  display: none;
+  width: 100%;
+  background-color: #82e1e2;
+  text-align: center;
+}
+
+#mobile-header p {
+  margin: 0;
+  text-shadow: none;
+  line-height: 1.2rem;
+  color: #0f0a1e;
+}
+
 @keyframes blink {
   35% { opacity: 0; }
+}
+
+@media screen and (max-width: 600px) {
+  * {
+    letter-spacing: 0.25rem;
+    line-height: 1.8rem;
+    text-shadow: 
+      -1px 0 0 #fdff2a,
+      -2px 0 0 #df4a42,
+      1px 0 0 #91fcfe,
+      2px 0 0 #4405fc;
+  }
+
+  body {
+    font-size: 12px;
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+  }
+
+  #body #totalheader {
+    padding: 10px 20px;
+  }
+  
+  #content {
+    padding: 10px 20px;
+  }
+
+  #mobile-header {
+    display: block;
+  }
 }

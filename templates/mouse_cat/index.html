@@ -5,7 +5,7 @@
 {% block content %}
 <div id="content">
     <h1>Service catalog</h1>
-    <ul>
+    <ul >
         {% if request.user.is_authenticated %}
         <li class="menu-option" onclick="location.href = '{% url 'select_game' 'current'  %}';">
             <span class="arrow">➤</span>
