@@ -9,11 +9,13 @@ datamodel/migrations/0001_initial.py                  8      0   100%
 datamodel/migrations/0002_auto_20191112_1421.py       6      0   100%
 datamodel/migrations/0003_counter.py                  4      0   100%
 datamodel/migrations/0004_auto_20191119_1351.py       4      0   100%
+datamodel/migrations/0005_auto_20191212_1003.py       5      0   100%
+datamodel/migrations/0006_auto_20191212_1007.py       5      0   100%
 datamodel/migrations/__init__.py                      0      0   100%
-datamodel/models.py                                 147     22    85%   22, 81, 115, 117, 119, 121, 124, 126, 128, 130, 132, 140, 146-151, 154-155, 160-162, 197
-datamodel/views.py                                    1      1     0%   1
+datamodel/models.py                                 168     26    85%   21, 33, 58, 142, 193, 195, 197, 199, 202, 204, 206, 208, 210, 218, 224-229, 238, 246, 255-261, 266-268, 307
+datamodel/views.py                                    0      0   100%
 -------------------------------------------------------------------------------
-TOTAL                                               183     26    86%
+TOTAL                                               213     29    86%
 
 
 
@@ -25,8 +27,8 @@ logic/admin.py                     1      0   100%
 logic/apps.py                      3      3     0%   1-5
 logic/forms.py                    27      0   100%
 logic/migrations/__init__.py       0      0   100%
-logic/models.py                    1      0   100%
+logic/models.py                    0      0   100%
 logic/urls.py                      3      0   100%
-logic/views.py                   148      9    94%   53-54, 88, 159, 202, 207, 210, 219-220
+logic/views.py                   329    171    48%   70-74, 113, 123-130, 136, 176-251, 258-354, 362, 372, 381, 388, 409-472, 478-515, 521-554, 572, 581, 588, 601-602, 613-615, 618-620, 626-628, 633-635
 ------------------------------------------------------------
-TOTAL                            183     12    93%
+TOTAL                            363    174    52%

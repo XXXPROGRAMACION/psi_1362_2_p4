@@ -472,6 +472,7 @@ def show_replay_service(request):
     return render(request, 'mouse_cat/replay.html', context_dict)
 
 
+# Autor: Víctor Yrazusta Ibarra
 @login_required
 @require_http_methods(['POST'])
 def get_update(request):
@@ -515,6 +516,7 @@ def get_update(request):
     return JsonResponse(ret, safe=False)
 
 
+# Autor: Alejandro Pascual Pozo
 @login_required
 @require_http_methods(['POST'])
 def get_board(request):
@@ -604,6 +606,7 @@ def move_service(request):
     return redirect(reverse('show_game'))
 
 
+# Autor: Víctor Yrazusta Ibarra
 @login_required
 @require_http_methods(['POST'])
 def get_move_service(request):
