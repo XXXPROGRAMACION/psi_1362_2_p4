@@ -2,33 +2,43 @@
 
 {% block content %}
 <div id="content">
-    <h1>Select game</h1>
-    <p>
-        {% if as_cat %}
-            Games as cat:
-            <ul>
-            {% for game in as_cat %}
-                <li> <a href="{% url 'select_game' game.id %}">{{ game }}</a></li>
-            {% endfor %}
-            </ul>
-        {% else %}
-            No games as cat
-        {% endif %}
-    </p>
-
-    <p>
-        {% if as_mouse %}
-            Games as mouse:
-            <ul>
-            {% for game in as_mouse %}
-                <li> <a href="{% url 'select_game' game.id %}">{{ game }}</a></li>
-            {% endfor %}
-            </ul>
-        {% else %}
-            No games as mouse
-        {% endif %}
-    </p>
-    
-    <p><a href="{% url 'landing' %}">Return to homepage</a></p>
+    {% if game_type %}
+        {% ifequal game_type 'current' %}
+            <h1>Select a game to play</h1>
+        {% endifequal %}
+        {% ifequal game_type 'open' %}
+            <h1>Select an open game to join</h1>
+            {% endifequal %}
+        {% ifequal game_type 'replay' %}
+            <h1>Select a replay to watch</h1>
+        {% endifequal %}
+        <p>
+            {% if as_cat %}
+                Games as cat:
+                <ul>
+                {% for game in as_cat %}
+                    <li> <a href="{% url 'select_game' game_type game.id %}">{{ game }}</a></li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                No games as cat
+            {% endif %}
+        </p>
+        <p>
+            {% if as_mouse %}
+                Games as mouse:
+                <ul>
+                {% for game in as_mouse %}
+                    <li> <a href="{% url 'select_game' game_type game.id %}">{{ game }}</a></li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                No games as mouse
+            {% endif %}
+        </p>
+        <p><a href="{% url 'landing' %}">Return to homepage</a></p>
+    {% else %}
+        <h1>Unexpected error</h1>
+    {% endif %}
 </div>
 {% endblock content %}

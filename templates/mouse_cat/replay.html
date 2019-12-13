@@ -2,7 +2,7 @@
 
 {% block content %}
 <div id="content">
-    <h1>Play</h1>
+    <h1>Replay</h1>
     <p>Game: <b>{{ game.id }}</b></p>
     <form id="move_form" method="post" action="{% url 'move' %}">
         {% csrf_token %}

@@ -27,19 +27,15 @@
             <span class="arrow">➤</span>
             <span class="text">Create game</span>
         </li>
-        <li class="menu-option" onclick="location.href = '{% url 'join_game' %}';">
+        <li class="menu-option" onclick="location.href = '{% url 'select_game' 'open' %}';">
             <span class="arrow">➤</span>
             <span class="text">Join game</span>
         </li>
-        <li class="menu-option" onclick="location.href = '{% url 'select_game' %}';">
+        <li class="menu-option" onclick="location.href = '{% url 'select_game' 'current'  %}';">
             <span class="arrow">➤</span>
-            <span class="text">Select game</span>
+            <span class="text">Select game and play</span>
         </li>
-        <li class="menu-option" onclick="location.href = '{% url 'show_game' %}';">
-            <span class="arrow">➤</span>
-            <span class="text">Show selected game and play</span>
-        </li>
-        <li class="menu-option" onclick="location.href = '{% url 'select_replay' %}';">
+        <li class="menu-option" onclick="location.href = '{% url 'select_game' 'replay' %}';">
             <span class="arrow">➤</span>
             <span class="text">Watch a replay</span>
         </li>
