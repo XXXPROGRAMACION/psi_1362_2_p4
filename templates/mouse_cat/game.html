@@ -8,13 +8,9 @@
         {% csrf_token %}
         <p>
             Cats: <b>{{ game.cat_user.username }}</b>
-            {% if game.cat_user.id == request.user.id %}
-            {% endif %}
         </p>
         <p>
             Mouse: <b>{{ game.mouse_user.username }}</b>
-            {% if game.mouse_user.id == request.user.id %}
-            {% endif %}
         </p>
         <p class="turn_indicator">
             {% if game.cat_turn %}
@@ -79,18 +75,22 @@
                 if (mouse_is_trapped(cats[0], cats[1], cats[2], cats[3], mouse)) {
                     game_finished = true;
                     clearInterval(interval);
+                    $(".turn_indicator").text("The game has finished.");
+                    $(".cell").css("cursor", "default");
                     if (user_is_cat) {
-                        alert("Congratulations! You've won the game");
+                        $(".status").text("Congratulations! You've won the game.");
                     } else {
-                        alert("Sadly you've lost the game :(");
+                        $(".status").text("Sadly you've lost the game :(");
                     }
                 } else if (mouse_has_scaped(cats[0], cats[1], cats[2], cats[3], mouse)) {
                     game_finished = true;
                     clearInterval(interval);
+                    $(".turn_indicator").text("The game has finished.");
+                    $(".cell").css("cursor", "default");
                     if (!user_is_cat) {
-                        alert("Congratulations! You've won the game");
+                        $(".status").text("Congratulations! You've won the game.");
                     } else {
-                        alert("Sadly you've lost the game :(");
+                        $(".status").text("Sadly you've lost the game :(");
                     }
                 }
             }
@@ -103,8 +103,6 @@
                 var xhttp = new XMLHttpRequest();
                 xhttp.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
-                        // Realizar movimiento en el cliente 
-                        //alert("Movement from " + origin + " to " + target + " succesful");
                         $("#cell_" + origin).empty();
                         board[origin] = 0
                         if (is_mouse) {
@@ -121,32 +119,42 @@
                         if (mouse_is_trapped(cats[0], cats[1], cats[2], cats[3], mouse)) {
                             game_finished = true;
                             clearInterval(interval);
+                            $(".turn_indicator").text("The game has finished.");  
+                            $(".cell").css("cursor", "default");  
                             if (user_is_cat) {
-                                alert("Congratulations! You've won the game");
+                                $(".status").text("Congratulations! You've won the game");
                             } else {
-                                alert("Sadly you've lost the game :(");
+                                $(".status").text("Sadly you've lost the game :(");
                             }
                         } else if (mouse_has_scaped(cats[0], cats[1], cats[2], cats[3], mouse)) {
                             game_finished = true;
                             clearInterval(interval);
+                            $(".turn_indicator").text("The game has finished.");
+                            $(".cell").css("cursor", "default");
                             if (!user_is_cat) {
-                                alert("Congratulations! You've won the game");
+                                $(".status").text("Congratulations! You've won the game");
                             } else {
-                                alert("Sadly you've lost the game :(");
+                                $(".status").text("Sadly you've lost the game :(");
                             }
+                        }
+
+                        if (game_finished) {
+                            return;
                         }
 
                         if (cat_turn) {
                             {% if game.cat_user.id == request.user.id %}
-                                $(".turn_indicator").text("Your turn!");
+                                $(".turn_indicator, .status").text("Your turn!");
                             {% else %}
                                 $(".turn_indicator").text("{{ game.cat_user.username }}'s turn");
+                                $(".status").text("Waiting for {{ game.cat_user.username }}...");
                             {% endif %}
                         } else {
                             {% if game.mouse_user.id == request.user.id %}
-                                $(".turn_indicator").text("Your turn!");
+                                $(".turn_indicator, .status").text("Your turn!");
                             {% else %}
-                                $(".turn_indicator").text("{{ game.cat_user.username }}'s turn");
+                                $(".turn_indicator").text("{{ game.mouse_user.username }}'s turn");
+                                $(".status").text("Waiting for {{ game.mouse_user.username }}...");
                             {% endif %}
                         }
                     }
@@ -156,13 +164,14 @@
             }
 
             function cell_on_click(cell_id) {
+                if (game_finished) return;
                 if ($("#cell_" + cell_id).text().includes("🐱")) {
                     if (!user_is_cat) {
-                        alert("You are not the cat player.");
+                        $(".status").text("You are not the cat player.");
                         return;
                     }
                     if (!cat_turn) {
-                        alert("Not your turn. Wait until the mouse player makes a move.")
+                        $(".status").text("Not your turn. Wait until the mouse player makes a move.");
                         return;
                     }
                     for (cell in cell_target_list) {
@@ -196,11 +205,11 @@
                     }
                 } else if ($("#cell_" + cell_id).text().includes("🐭")) {
                     if (user_is_cat) {
-                        alert("You are not the mouse player.");
+                        $(".status").text("You are not the mouse player.");
                         return;
                     }
                     if (cat_turn) {
-                        alert("Not your turn. Wait until the cat player makes a move.")
+                        $(".status").text("Not your turn. Wait until the cat player makes a move.");
                         return;
                     }                        
                     for (cell in cell_target_list) {
@@ -257,9 +266,9 @@
                     if (cell_target_list.includes(cell_id)) {
                         send_move(cell_origin, cell_id, target_mouse);
                     } else if (cell_target_list.length != 0) {
-                        alert("Invalid move.");
+                        $(".status").text("Invalid move.");
                     } else if (cat_turn != user_is_cat) {
-                        alert("Not your turn.");
+                        $(".status").text("Not your turn.");
                     }
                     for (cell in cell_target_list) {
                         $("#cell_" + cell_target_list[cell]).css("background", "");
@@ -295,21 +304,26 @@
                         } else {
                             board = new_board;
                             update_board(board);
-                            //alert("Now is your turn!");
                             cat_turn = !cat_turn;
+                        }
+
+                        if (game_finished) {
+                            return;
                         }
 
                         if (cat_turn) {
                             {% if game.cat_user.id == request.user.id %}
-                                $(".turn_indicator").text("Your turn!");
+                                $(".turn_indicator, .status").text("Your turn!");
                             {% else %}
                                 $(".turn_indicator").text("{{ game.cat_user.username }}'s turn");
+                                $(".status").text("Waiting for {{ game.cat_user.username }}...");
                             {% endif %}
                         } else {
                             {% if game.mouse_user.id == request.user.id %}
-                                $(".turn_indicator").text("Your turn!");
+                                $(".turn_indicator, .status").text("Your turn!");
                             {% else %}
-                                $(".turn_indicator").text("{{ game.cat_user.username }}'s turn");
+                                $(".turn_indicator").text("{{ game.mouse_user.username }}'s turn");
+                                $(".status").text("Waiting for {{ game.mouse_user.username }}...");
                             {% endif %}
                         }
                     }
@@ -331,6 +345,18 @@
         {% endfor %}
         </div>
     {% endif %}
+
+    <p class="status">
+        {% if game.cat_user.id == request.user.id and game.cat_turn or game.cat_user.id != request.user.id and not game.cat_turn %}
+            Your turn!
+        {% else %}
+            {% if game.cat_user.id == request.user.id %}
+                Waiting for {{ game.mouse_user.username }}...
+            {% else %}
+                Waiting for {{ game.cat_user.username }}...
+            {% endif %}
+        {% endif %}
+    </p>
 
     <p><a href="{% url 'landing' %}">Return to homepage</a></p>
 </div>
