@@ -54,6 +54,11 @@
                 return true;
             }
 
+            function mouse_has_scaped(cat1, cat2, cat3, cat4, mouse) {
+                if (mouse < cat1 && mouse < cat2 && mouse < cat3 && mouse < cat4) return true;
+                return false;
+            }
+
             function update_board(board) {
                 cats = []
                 for (let i = 0; i < 64; i++) {
@@ -72,6 +77,14 @@
                     game_finished = true;
                     clearInterval(interval);
                     if (user_is_cat) {
+                        alert("Congratulations! You've won the game");
+                    } else {
+                        alert("Sadly you've lost the game :(");
+                    }
+                } else if (mouse_has_scaped(cats[0], cats[1], cats[2], cats[3], mouse)) {
+                    game_finished = true;
+                    clearInterval(interval);
+                    if (!user_is_cat) {
                         alert("Congratulations! You've won the game");
                     } else {
                         alert("Sadly you've lost the game :(");
@@ -106,6 +119,14 @@
                             game_finished = true;
                             clearInterval(interval);
                             if (user_is_cat) {
+                                alert("Congratulations! You've won the game");
+                            } else {
+                                alert("Sadly you've lost the game :(");
+                            }
+                        } else if (mouse_has_scaped(cats[0], cats[1], cats[2], cats[3], mouse)) {
+                            game_finished = true;
+                            clearInterval(interval);
+                            if (!user_is_cat) {
                                 alert("Congratulations! You've won the game");
                             } else {
                                 alert("Sadly you've lost the game :(");

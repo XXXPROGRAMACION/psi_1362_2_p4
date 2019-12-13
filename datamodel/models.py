@@ -17,6 +17,12 @@ def mouse_is_trapped(cat1, cat2, cat3, cat4, mouse):
         return False
     return True
 
+def mouse_has_scaped(cat1, cat2, cat3, cat4, mouse):
+    if (mouse < cat1 and mouse < cat2 and mouse < cat3 and mouse < cat4):
+        return True
+    return False
+
+
 class GameStatus(IntEnum):
     CREATED = 0
     ACTIVE = 1
@@ -169,6 +175,8 @@ class Move(models.Model):
                 raise ValidationError(constants.MSG_ERROR_MOVE)
 
             if mouse_is_trapped(self.game.cat1, self.game.cat2, self.game.cat3, self.game.cat4, self.game.mouse):
+                self.game.status = GameStatus.FINISHED
+            elif mouse_has_scaped(self.game.cat1, self.game.cat2, self.game.cat3, self.game.cat4, self.game.mouse):
                 self.game.status = GameStatus.FINISHED
 
         elif self.game.cat_turn is False and self.game.mouse_user == self.player:
