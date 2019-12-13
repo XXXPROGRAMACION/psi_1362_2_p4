@@ -1,6 +1,10 @@
 {% extends "mouse_cat/base.html" %}
 
 {% block content %}
+<script>
+    cat_page = 1;
+    mouse_page = 1;
+</script>
 <div id="content">
     {% if game_type %}
         {% ifequal game_type 'current' %}
@@ -20,6 +24,7 @@
                     <li> <a href="{% url 'select_game' game_type game.id %}">{{ game }}</a></li>
                 {% endfor %}
                 </ul>
+                <button> Button </button>
             {% else %}
                 No games as cat
             {% endif %}
@@ -32,6 +37,7 @@
                     <li> <a href="{% url 'select_game' game_type game.id %}">{{ game }}</a></li>
                 {% endfor %}
                 </ul>
+                <button> Button </button>
             {% else %}
                 No games as mouse
             {% endif %}
