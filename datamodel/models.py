@@ -2,20 +2,37 @@ from django.db import models
 from django.contrib.auth.models import User
 from enum import IntEnum
 from django.core.exceptions import ValidationError
-from datetime import datetime
 from datamodel import constants
 from django.utils import timezone
 
+
 def mouse_is_trapped(cat1, cat2, cat3, cat4, mouse):
-    if (mouse+9 < 64 and mouse+9 != cat1 and mouse+9 != cat2 and mouse+9 != cat3 and mouse+9 != cat4 and (mouse+1)%8 != 0):
+    if (
+        mouse+9 < 64 and mouse+9 != cat1 and
+        mouse+9 != cat2 and mouse+9 != cat3 and
+        mouse+9 != cat4 and (mouse+1) % 8 != 0
+    ):
         return False
-    if (mouse+7 < 64 and mouse+7 != cat1 and mouse+7 != cat2 and mouse+7 != cat3 and mouse+7 != cat4 and mouse%8 != 0):
+    if (
+        mouse+7 < 64 and mouse+7 != cat1 and
+        mouse+7 != cat2 and mouse+7 != cat3 and
+        mouse+7 != cat4 and mouse % 8 != 0
+    ):
         return False
-    if (mouse-9 >= 0 and mouse-9 != cat1 and mouse-9 != cat2 and mouse-9 != cat3 and mouse-9 != cat4 and mouse%8 != 0):
+    if (
+        mouse-9 >= 0 and mouse-9 != cat1 and
+        mouse-9 != cat2 and mouse-9 != cat3 and
+        mouse-9 != cat4 and mouse % 8 != 0
+    ):
         return False
-    if (mouse-7 >= 0 and mouse-7 != cat1 and mouse-7 != cat2 and mouse-7 != cat3 and mouse-7 != cat4 and (mouse+1)%8 != 0):
+    if (
+        mouse-7 >= 0 and mouse-7 != cat1 and
+        mouse-7 != cat2 and mouse-7 != cat3 and
+        mouse-7 != cat4 and (mouse+1) % 8 != 0
+    ):
         return False
     return True
+
 
 def mouse_has_scaped(cat1, cat2, cat3, cat4, mouse):
     if (mouse < cat1 and mouse < cat2 and mouse < cat3 and mouse < cat4):
@@ -29,7 +46,7 @@ class GameStatus(IntEnum):
     FINISHED = 2
 
     # Autor: Alejandro Pascual Pozo
-    def to_string(game_status):
+    def to_string(self, game_status):
         if game_status == GameStatus.CREATED:
             return 'Created'
         elif game_status == GameStatus.ACTIVE:
@@ -74,9 +91,27 @@ class Game(models.Model):
         self.validate()
         if self.status == GameStatus.CREATED and self.mouse_user is not None:
             self.status = GameStatus.ACTIVE
-        if self.status == GameStatus.ACTIVE and mouse_is_trapped(self.cat1, self.cat2, self.cat3, self.cat4, self.mouse):
+        if (
+            self.status == GameStatus.ACTIVE and
+            mouse_is_trapped(
+                self.cat1,
+                self.cat2,
+                self.cat3,
+                self.cat4,
+                self.mouse
+            )
+        ):
             self.status = GameStatus.FINISHED
-        elif self.status == GameStatus.ACTIVE and mouse_has_scaped(self.cat1, self.cat2, self.cat3, self.cat4, self.mouse):
+        elif (
+            self.status == GameStatus.ACTIVE and
+            mouse_has_scaped(
+                self.cat1,
+                self.cat2,
+                self.cat3,
+                self.cat4,
+                self.mouse
+            )
+        ):
             self.status = GameStatus.FINISHED
         super(Game, self).save(*args, **kwargs)
 
@@ -92,31 +127,37 @@ class Game(models.Model):
             raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
         if self.mouse < Game.MIN_CELL or self.mouse > Game.MAX_CELL:
             raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
-        if self.cat1%2 != self.cat1//8%2:
+        if self.cat1 % 2 != self.cat1//8 % 2:
             raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
-        if self.cat2%2 != self.cat2//8%2:
+        if self.cat2 % 2 != self.cat2//8 % 2:
             raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
-        if self.cat3%2 != self.cat3//8%2:
+        if self.cat3 % 2 != self.cat3//8 % 2:
             raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
-        if self.cat4%2 != self.cat4//8%2:
+        if self.cat4 % 2 != self.cat4//8 % 2:
             raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
-        if self.mouse%2 != self.mouse//8%2:
+        if self.mouse % 2 != self.mouse//8 % 2:
             raise ValidationError(constants.MSG_ERROR_INVALID_CELL)
         if GameStatus(self.status) is None:
             raise ValidationError(constants.MSG_ERROR_GAMESTATUS)
 
     class Meta:
         app_label = 'datamodel'
-     
+
     # Autor: Alejandro Pascual Pozo
     def __str__(self):
         message = (
             '(%d, %s)' % (self.id, GameStatus.to_string(self.status)) +
-            '\tCat [%c] %s(%d, %d, %d, %d)' % (('X' if self.cat_turn else ' '), self.cat_user, self.cat1, self.cat2, self.cat3, self.cat4)
+            '\tCat [%c] %s(%d, %d, %d, %d)' % (
+                ('X' if self.cat_turn else ' '),
+                self.cat_user, self.cat1, self.cat2, self.cat3, self.cat4
+            )
         )
 
         if self.mouse_user is not None:
-            message += ' --- Mouse [%c] %s(%d)' % (('X' if not self.cat_turn else ' '), self.mouse_user, self.mouse)
+            message += ' --- Mouse [%c] %s(%d)' % (
+                ('X' if not self.cat_turn else ' '),
+                self.mouse_user, self.mouse
+            )
 
         return message
 
@@ -124,8 +165,16 @@ class Game(models.Model):
 class Move(models.Model):
     origin = models.IntegerField(null=False)
     target = models.IntegerField(null=False)
-    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name='moves')
-    player = models.ForeignKey(User, on_delete=models.CASCADE, related_name='moves')
+    game = models.ForeignKey(
+        Game,
+        on_delete=models.CASCADE,
+        related_name='moves'
+    )
+    player = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='moves'
+    )
     date = models.DateTimeField(null=False, default=timezone.now)
 
     # Autor: Víctor Yrazusta Ibarra
@@ -136,16 +185,16 @@ class Move(models.Model):
     def save(self, *args, **kwargs):
         self.validate()
         super(Move, self).save(*args, **kwargs)
-    
+
     # Autor: Víctor Yrazusta Ibarra
     def validate(self):
         if self.origin < Game.MIN_CELL or self.origin > Game.MAX_CELL:
             raise ValidationError(constants.MSG_ERROR_MOVE)
         if self.target < Game.MIN_CELL or self.target > Game.MAX_CELL:
             raise ValidationError(constants.MSG_ERROR_MOVE)
-        if self.origin%2 is not self.origin//8%2:
+        if self.origin % 2 is not self.origin//8 % 2:
             raise ValidationError(constants.MSG_ERROR_MOVE)
-        if self.target%2 is not self.target//8%2:
+        if self.target % 2 is not self.target//8 % 2:
             raise ValidationError(constants.MSG_ERROR_MOVE)
 
         if self.target == self.game.mouse:
@@ -161,12 +210,12 @@ class Move(models.Model):
 
         if self.game.status != GameStatus.ACTIVE:
             raise ValidationError(constants.MSG_ERROR_MOVE)
-    
+
         if self.game.cat_turn is True and self.game.cat_user == self.player:
-            if not (self.origin%8 != 0 and self.target == self.origin+7):
-                if not (self.origin%8 != 7 and self.target == self.origin+9):
+            if not (self.origin % 8 != 0 and self.target == self.origin+7):
+                if not (self.origin % 8 != 7 and self.target == self.origin+9):
                     raise ValidationError(constants.MSG_ERROR_MOVE)
-                    
+
             if self.origin == self.game.cat1:
                 self.game.cat1 = self.target
             elif self.origin == self.game.cat2:
@@ -178,14 +227,36 @@ class Move(models.Model):
             else:
                 raise ValidationError(constants.MSG_ERROR_MOVE)
 
-            if mouse_is_trapped(self.game.cat1, self.game.cat2, self.game.cat3, self.game.cat4, self.game.mouse):
+            if mouse_is_trapped(
+                self.game.cat1,
+                self.game.cat2,
+                self.game.cat3,
+                self.game.cat4,
+                self.game.mouse
+            ):
                 self.game.status = GameStatus.FINISHED
-            elif mouse_has_scaped(self.game.cat1, self.game.cat2, self.game.cat3, self.game.cat4, self.game.mouse):
+            elif mouse_has_scaped(
+                self.game.cat1,
+                self.game.cat2,
+                self.game.cat3,
+                self.game.cat4,
+                self.game.mouse
+            ):
                 self.game.status = GameStatus.FINISHED
-
-        elif self.game.cat_turn is False and self.game.mouse_user == self.player:
-            if not (self.origin%8 != 0 and (self.target == self.origin+7 or self.target == self.origin-9)):
-                if not (self.origin%8 != 7 and (self.target == self.origin+9 or self.target == self.origin-7)):
+        elif (
+            self.game.cat_turn is False and
+            self.game.mouse_user == self.player
+        ):
+            if not (
+                self.origin % 8 != 0 and
+                (self.target == self.origin+7 or self.target == self.origin-9)
+            ):
+                if not (
+                    self.origin % 8 != 7 and (
+                        self.target == self.origin+9 or
+                        self.target == self.origin-7
+                    )
+                ):
                     raise ValidationError(constants.MSG_ERROR_MOVE)
 
             if self.origin == self.game.mouse:
@@ -195,7 +266,6 @@ class Move(models.Model):
         else:
             raise ValidationError(constants.MSG_ERROR_MOVE)
 
-        
         self.game.cat_turn = not self.game.cat_turn
         self.game.save()
 
@@ -209,14 +279,14 @@ class CounterManager(models.Manager):
     def get_current_value(self):
         try:
             return self.get(pk=1).value
-        except:
+        except Exception:
             return 0
 
     # Autor: Alejandro Pascual Pozo
     def inc(self):
         try:
             counter = self.get(pk=1)
-        except:
+        except Exception:
             counter = Counter(pk=1)
         counter.value += 1
         super(Counter, counter).save()
