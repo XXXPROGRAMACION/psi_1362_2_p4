@@ -55,7 +55,6 @@
             }
 
             function update_board(board) {
-                let j = 0;
                 cats = []
                 for (let i = 0; i < 64; i++) {
                     if (board[i] == -1) {
@@ -63,8 +62,7 @@
                         mouse = i;
                     } else if (board[i] == 1) {
                         $("#cell_" + i).text("🐱");
-                        cats[j] = i;
-                        j++;
+                        cats.push(i);
                     } else {
                         $("#cell_" + i).empty();
                     }
@@ -81,7 +79,7 @@
                 }
             }
 
-            function send_move(origin, target, mouse) {
+            function send_move(origin, target, is_mouse) {
                 var data = new FormData();
                 data.append('origin', origin);
                 data.append('target', target);
@@ -93,7 +91,7 @@
                         //alert("Movement from " + origin + " to " + target + " succesful");
                         $("#cell_" + origin).empty();
                         board[origin] = 0
-                        if (mouse) {
+                        if (is_mouse) {
                             $("#cell_" + target).append("🐭");
                             board[target] = -1;
                             mouse = target
