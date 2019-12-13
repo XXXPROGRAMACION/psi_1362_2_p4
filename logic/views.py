@@ -16,6 +16,7 @@ ELEMENTS_PER_PAGE = 3
 
 # Autor: Alejandro Pascual Pozo
 def errorHTTP(request, exception=None, status=200):
+    inc_counters(request)
     context_dict = {}
     context_dict[constants.ERROR_MESSAGE_ID] = exception
     return render(request, 'mouse_cat/error.html', context_dict, status=status)
@@ -117,7 +118,6 @@ def signup_service(request):
 # Autor: Alejandro Pascual Pozo
 @require_http_methods(['GET'])
 def counter_service(request):
-    inc_counters(request)
 
     counter_session = request.session['counter_session']
     counter_global = Counter.objects.get_current_value()
@@ -609,10 +609,12 @@ def get_move_service(request):
     shift = int(request.POST.get('shift', '0'))
 
     if shift != -1 and shift != 1:
+        inc_counters(request)
         data = {'valid': False}
         return JsonResponse(data, safe=False)
 
     if 'game_selected' not in request.session:
+        inc_counters(request)
         data = {'valid': False}
         return JsonResponse(data, safe=False)
 
@@ -620,12 +622,14 @@ def get_move_service(request):
     games = Game.objects.filter(id=game_id)
 
     if len(games) == 0:
+        inc_counters(request)
         data = {'valid': False}
         return JsonResponse(data, safe=False)
 
     game = games[0]
 
     if game.status != GameStatus.FINISHED:
+        inc_counters(request)
         data = {'valid': False}
         return JsonResponse(data, safe=False)
 
@@ -636,6 +640,7 @@ def get_move_service(request):
         (shift == -1 and current_move <= 0) or
         (shift == 1 and current_move >= len(moves))
     ):
+        inc_counters(request)
         data = {'valid': False}
         return JsonResponse(data, safe=False)
 

@@ -33,10 +33,10 @@
             <span class="text">Signup</span>
         </li>        
         {% endif %}
-        {% comment %} <li class="menu-option" onclick="location.href = '{% url 'counter' %}';">
+        <li class="menu-option" onclick="location.href = '{% url 'counter' %}';">
             <span class="arrow">➤</span>
-            <span class="text">Counter</span>
-        </li> {% endcomment %}
+            <span class="text">Error counter</span>
+        </li>
         {% if request.user.is_authenticated %}
         <li class="menu-option" onclick="location.href = '{% url 'logout' %}';">
             <span class="arrow">➤</span>
