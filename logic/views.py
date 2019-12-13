@@ -169,12 +169,13 @@ def select_game_service(request, game_type=None, game_id=None):
             return render(request, 'mouse_cat/join_game.html', context_dict)
         elif game_type == 'replay':
             request.session['game_selected'] = game_id
-            return redirect(reverse('show_relay'))
+            request.session['current_move'] = 0
+            return redirect(reverse('show_replay'))
         else:
             return errorHTTP(
                 request,
                 exception='The game category selected was not found.',
-                status=400
+                status=404
             )
     else:
         if game_type == 'current':
@@ -230,6 +231,13 @@ def show_game_service(request):
 
     game = games[0]
 
+    if game.status != GameStatus.ACTIVE and game.status != GameStatus.FINISHED:
+        return errorHTTP(
+            request,
+            exception='The selected game is not active or finished',
+            status=404
+        )
+
     if game.cat_user != request.user and game.mouse_user != request.user:
         return errorHTTP(
             request,
@@ -254,7 +262,7 @@ def show_replay_service(request):
     if 'game_selected' not in request.session:
         return errorHTTP(
             request,
-            exception='You have not selected a game',
+            exception='You have not selected a replay',
             status=404
         )
 
@@ -264,11 +272,42 @@ def show_replay_service(request):
     if len(games) == 0:
         return errorHTTP(
             request,
-            exception='The selected game is not valid',
+            exception='The selected replay is not valid',
             status=404
         )
 
     game = games[0]
+
+    if game.status != GameStatus.FINISHED:
+        return errorHTTP(
+            request,
+            exception='The selected replay is not a finished game',
+            status=404
+        )
+
+    game.cat1 = 0
+    game.cat2 = 2
+    game.cat3 = 4
+    game.cat4 = 6
+    game.mouse = 59
+
+    current_move = request.session['current_move']
+    moves = Move.objects.filter(game=game_id).order_by('date')
+    if current_move > 0:
+        for move in moves[0:current_move]:
+            if move.origin == game.cat1:
+                game.cat1 = move.target
+            elif move.origin == game.cat2:
+                game.cat2 = move.target
+            elif move.origin == game.cat3:
+                game.cat3 = move.target
+            elif move.origin == game.cat4:
+                game.cat4 = move.target
+            elif move.origin == game.mouse:
+                game.mouse = move.target
+
+    has_next = current_move < len(moves)
+    has_previous = current_move > 0
 
     board = [0]*64
     board[game.cat1] = 1
@@ -277,9 +316,8 @@ def show_replay_service(request):
     board[game.cat4] = 1
     board[game.mouse] = -1
 
-    context_dict = {'game': game, 'board': board}
+    context_dict = {'game': game, 'board': board, 'has_next': has_next, 'has_previous': has_previous}
     return render(request, 'mouse_cat/replay.html', context_dict)
-
 
 @login_required
 @require_http_methods(['POST'])
@@ -362,8 +400,6 @@ def get_board(request):
 
     return JsonResponse(board, safe=False)
 
-
-
 # Autor: Alejandro Pascual Pozo
 @login_required
 @require_http_methods(['POST'])
@@ -416,48 +452,46 @@ def move_service(request):
 
 @login_required
 @require_http_methods(['POST'])
-def get_move_service(request):
+def get_move_service(request, shift):
+    if shift != '-1' and shift != '+1':
+        data = { 'valid': False }
+        return JsonResponse(data, safe=False)
+
     if 'game_selected' not in request.session:
-        return errorHTTP(
-            request,
-            exception='You have not selected a game',
-            status=404
-        )
+        data = { 'valid': False }
+        return JsonResponse(data, safe=False)
 
     game_id = request.session['game_selected']
     games = Game.objects.filter(id=game_id)
 
     if len(games) == 0:
-        return errorHTTP(
-            request,
-            exception='The selected game is not valid',
-            status=404
-        )
+        data = { 'valid': False }
+        return JsonResponse(data, safe=False)
 
     game = games[0]
 
-    if game.status != GameStatus.ACTIVE:
-        return errorHTTP(
-            request,
-            exception='The selected game is not active',
-            status=404
-        )
+    if game.status != GameStatus.FINISHED:
+        data = { 'valid': False }
+        return JsonResponse(data, safe=False)
 
+    current_move = request.session['current_move']
     moves = Move.objects.filter(game=game_id).order_by('date')
-    move_number = request.POST.get('move_number')
 
-    if move_number >= len(moves):
-        return errorHTTP(
-            request,
-            exception='The selected move does not exist',
-            status=404
-        )
+    if (shift == '-1' and current_move <= 0) or (shift == '+1' and current_move >= len(moves)):
+        data = { 'valid': False }
+        return JsonResponse(data, safe=False)
 
-    previous_exists = (move_number != 0)
-    next_exists = (move_number != len(moves)-1)
-    origin = moves[move_number].origin
-    target = moves[move_number].target
+    current_move += int(shift);
+    request.session['current_move'] = current_move;
 
-    data = {'previous': previous_exists, 'next': next_exists, 'origin': origin, 'target': target}
+    previous_exists = (current_move > 0)
+    next_exists = (current_move < len(moves))
+    if shift == '+1':
+        origin = moves[current_move - 1].origin
+        target = moves[current_move - 1].target
+    else:        
+        origin = moves[current_move].target
+        target = moves[current_move].origin
 
+    data = { 'origin': origin, 'target': target, 'previous': previous_exists, 'next': next_exists, 'valid': True }
     return JsonResponse(data, safe=False)

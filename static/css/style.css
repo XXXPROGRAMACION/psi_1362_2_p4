@@ -33,6 +33,8 @@ span {
 
 a {
   text-decoration: none;
+  cursor: pointer;
+  user-select: none;
 }
 
 a:hover {
@@ -99,6 +101,15 @@ ul {
   opacity: 1;
 }
 
+.disabled {
+  opacity: 0.5;
+  cursor: default;
+  animation: none !important;
+}
+
+.hidden {
+  display: none;
+}
 
 #body #totalheader {
   padding: 20px 40px;

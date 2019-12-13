@@ -15,6 +15,7 @@ urlpatterns = [
     path('show_game/',  views.show_game_service, name='show_game'),
     path('show_replay/',  views.show_replay_service, name='show_replay'),
     path('move/',  views.move_service, name='move'),
+    path('get_move/<str:shift>/',  views.get_move_service, name='get_move'),
     path('get_board/',  views.get_board, name='get_board'),
     path('get_update/',  views.get_update, name='get_update')
 ]

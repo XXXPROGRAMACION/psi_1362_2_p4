@@ -16,9 +16,6 @@ from django.urls import reverse
 from . import forms
 from . import tests_services
 
-GET_MOVE_SERVICE = "get_move"
-
-
 class GetMoveServiceTests(tests_services.PlayGameBaseServiceTests):
     def setUp(self):
         super().setUp()
