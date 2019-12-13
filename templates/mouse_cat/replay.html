@@ -16,15 +16,25 @@
             has_previous = {% if has_previous %}true{% else %}false{% endif %};
             running = false;
 
-            function run_replay() {
+            async function run_replay() {
                 if (!has_next) return;
-
                 running = true;
+                
                 $("#replay-run").addClass("hidden");
                 $("#replay-stop").removeClass("hidden");
+
+                while (running) {
+                    await sleep(2000);
+                    if (running) {
+                        request_move(1);
+                    }
+                }
+
+                console.log('Exit')
             }
 
             function stop_replay() {
+                running = false;
                 $("#replay-stop").addClass("hidden");
                 $("#replay-run").removeClass("hidden");
             }
@@ -45,7 +55,6 @@
                 xhttp.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
                         let move = JSON.parse(this.responseText);
-                        console.log(move, move.valid, 'kek')
                         if (move.valid) {
                             has_next = move.next;
                             has_previous = move.previous;
@@ -79,6 +88,9 @@
                 } else {
                     $("#replay-next").addClass("disabled");
                     $("#replay-run").addClass("disabled");
+                    running = false;
+                    $("#replay-stop").addClass("hidden");
+                    $("#replay-run").removeClass("hidden");
                     $(".status").text(winner_message);
                 }
 
@@ -86,7 +98,7 @@
                 else $("#replay-previous").addClass("disabled");
             }
 
-            function sleep(ms) {
+            async function sleep(ms) {
                 return new Promise(resolve => setTimeout(resolve, ms));
             }
 
