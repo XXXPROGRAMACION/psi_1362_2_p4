@@ -9,6 +9,9 @@ from datamodel.models import Game, GameStatus, Move, Counter
 from django.db.models import Q
 from django.views.decorators.http import require_http_methods
 from datetime import datetime, timezone
+from django.core.paginator import Paginator
+
+ELEMENTS_PER_PAGE = 3
 
 # Autor: Alejandro Pascual Pozo
 def errorHTTP(request, exception=None, status=200):
@@ -180,25 +183,15 @@ def select_game_service(request, game_type=None, game_id=None):
     else:
         if game_type == 'current':
             as_cat = Game.objects.filter(cat_user=request.user).filter(status=GameStatus.ACTIVE).order_by('-id')
-            if len(as_cat) == 0:
-                as_cat = None
             as_mouse = Game.objects.filter(mouse_user=request.user).filter(status=GameStatus.ACTIVE).order_by('-id')
-            if len(as_mouse) == 0:
-                as_mouse = None
-            context_dict = { 'as_cat': as_cat, 'as_mouse': as_mouse, 'game_type': 'current' }
+            context_dict = { 'cat_num_pages': len(as_cat)//ELEMENTS_PER_PAGE, 'mouse_num_pages': len(as_mouse)//ELEMENTS_PER_PAGE, 'game_type': 'current' }
         elif game_type == 'open':
             as_mouse = Game.objects.filter(status=GameStatus.CREATED).filter(~Q(cat_user=request.user)).order_by('-id')
-            if len(as_mouse) == 0:
-                as_mouse = None
-            context_dict = { 'as_mouse': as_mouse, 'game_type': 'open' }        
+            context_dict = { 'cat_num_pages': 0, 'mouse_num_pages': len(as_mouse)//ELEMENTS_PER_PAGE, 'game_type': 'open' }        
         elif game_type == 'replay':
             as_cat = Game.objects.filter(cat_user=request.user).filter(status=GameStatus.FINISHED).order_by('-id')
-            if len(as_cat) == 0:
-                as_cat = None
             as_mouse = Game.objects.filter(mouse_user=request.user).filter(status=GameStatus.FINISHED).order_by('-id')
-            if len(as_mouse) == 0:
-                as_mouse = None
-            context_dict = { 'as_cat': as_cat, 'as_mouse': as_mouse, 'game_type': 'replay' }
+            context_dict = { 'cat_num_pages': len(as_cat)//ELEMENTS_PER_PAGE, 'mouse_num_pages': len(as_mouse)//ELEMENTS_PER_PAGE, 'game_type': 'replay' }
         else:
             return errorHTTP(
                 request,
@@ -206,6 +199,90 @@ def select_game_service(request, game_type=None, game_id=None):
                 status=400
             )
         return render(request, 'mouse_cat/select_game.html', context_dict)
+
+
+# Autor: Alejandro Pascual Pozo
+@login_required
+@require_http_methods(['POST'])
+def get_new_page_service(request):
+    game_type = request.POST.get('game_type')
+    if game_type is None:
+        return errorHTTP(
+            request,
+            exception='No game type provided.',
+            status=404
+        )
+
+    page_num = request.POST.get('page_num')
+    if page_num is None:
+        return errorHTTP(
+            request,
+            exception='No page number provided.',
+            status=404
+        )
+
+    try:
+        page_num = int(page_num)
+    except:
+        return errorHTTP(
+            request,
+            exception='Page number invalid.',
+            status=404
+        )
+
+
+    cat_or_mouse = request.POST.get('cat_or_mouse')
+    if cat_or_mouse is None:
+        return errorHTTP(
+            request,
+            exception='No cat or mouse provided.',
+            status=404
+        )
+    is_cat = (cat_or_mouse == 'cat')
+
+    if game_type == 'current':
+        if is_cat:
+            data = Game.objects.filter(cat_user=request.user).filter(status=GameStatus.ACTIVE).order_by('-id')
+        else:
+            data = Game.objects.filter(mouse_user=request.user).filter(status=GameStatus.ACTIVE).order_by('-id')
+        page = Paginator(data, ELEMENTS_PER_PAGE)
+        if page.num_pages < page_num:
+            return errorHTTP(
+                request,
+                exception='Page not in range.',
+                status=404
+            )
+        context_dict = { 'page': page.page(page_num), 'game_type': 'current' }
+    elif game_type == 'open':
+        data = Game.objects.filter(status=GameStatus.CREATED).filter(~Q(cat_user=request.user)).order_by('-id')
+        page = Paginator(data, ELEMENTS_PER_PAGE)
+        if page.num_pages < page_num:
+            return errorHTTP(
+                request,
+                exception='Page not in range.',
+                status=404
+            )
+        context_dict = { 'page': page.page(page_num), 'game_type': 'open' }
+    elif game_type == 'replay':
+        if is_cat:
+            data = Game.objects.filter(cat_user=request.user).filter(status=GameStatus.FINISHED).order_by('-id')
+        else:
+            data = Game.objects.filter(mouse_user=request.user).filter(status=GameStatus.FINISHED).order_by('-id')
+        page = Paginator(data, ELEMENTS_PER_PAGE)
+        if page.num_pages < page_num:
+            return errorHTTP(
+                request,
+                exception='Page not in range.',
+                status=404
+            )
+        context_dict = { 'page': page.page(page_num), 'game_type': 'replay' }
+    else:
+        return errorHTTP(
+            request,
+            exception='The game category selected was not found.',
+            status=400
+        )
+    return render(request, 'mouse_cat/select_game_page.html', context_dict)
 
 
 # Autor: Víctor Yrazusta Ibarra
